@@ -1,0 +1,14 @@
+# Phase 2 dependencies for the AMD GPU embedding pipeline.
+#
+# On the ROCm notebook, install torch/torchvision from the ROCm-specific wheel
+# index FIRST (matching the ROCm driver version confirmed via `rocm-smi`), then
+# install the rest of this file normally:
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1
+#   pip install -r requirements-rocm.txt
+#
+# On a machine with no AMD GPU (e.g. local dev), `pip install torch` pulls the
+# CPU wheel instead — same code path, EmbeddingService just reports device="cpu".
+
+sentence-transformers==3.2.1
+chromadb==0.5.20

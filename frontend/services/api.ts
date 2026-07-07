@@ -1,0 +1,109 @@
+import { z } from "zod";
+import type { SearchResponse } from "@/types/paper";
+import type { BenchmarkResult, VectorMatch } from "@/types/vector";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL is not set — check your .env.local");
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly retryable: boolean,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function handleErrorResponse(response: Response): Promise<never> {
+  let detail = response.statusText;
+  let retryable = false;
+  try {
+    const body = await response.json();
+    detail = body?.detail?.detail ?? detail;
+    retryable = body?.detail?.retryable ?? false;
+  } catch {
+    // response wasn't JSON; fall back to statusText
+  }
+  throw new ApiError(detail, response.status, retryable);
+}
+
+const paperSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  authors: z.array(z.string()),
+  abstract: z.string(),
+  published: z.string(),
+  updated: z.string(),
+  pdf_url: z.string(),
+  source: z.enum(["arxiv", "pubmed", "upload"]),
+});
+
+const searchResponseSchema = z.object({
+  query: z.string(),
+  count: z.number(),
+  papers: z.array(paperSchema),
+});
+
+export async function searchPapers(
+  query: string,
+  maxResults = 10,
+  signal?: AbortSignal,
+): Promise<SearchResponse> {
+  const url = new URL("/api/search", API_BASE_URL);
+  url.searchParams.set("q", query);
+  url.searchParams.set("max_results", String(maxResults));
+
+  const response = await fetch(url, { signal });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return searchResponseSchema.parse(await response.json());
+}
+
+const vectorMatchSchema = z.object({
+  id: z.string(),
+  document: z.string(),
+  metadata: z.record(z.string(), z.string()),
+  distance: z.number(),
+  similarity: z.number(),
+});
+
+export async function getSimilarPapers(
+  paperId: string,
+  topK = 5,
+  signal?: AbortSignal,
+): Promise<VectorMatch[]> {
+  const url = new URL(`/api/papers/${encodeURIComponent(paperId)}/similar`, API_BASE_URL);
+  url.searchParams.set("top_k", String(topK));
+
+  const response = await fetch(url, { signal });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return z.array(vectorMatchSchema).parse(await response.json());
+}
+
+const benchmarkResultSchema = z.object({
+  device: z.string(),
+  device_name: z.string(),
+  batch_size: z.number(),
+  num_texts: z.number(),
+  elapsed_ms: z.number(),
+  texts_per_sec: z.number(),
+});
+
+export async function runEmbeddingBenchmark(
+  numTexts = 50,
+  signal?: AbortSignal,
+): Promise<BenchmarkResult> {
+  const url = new URL("/api/embeddings/benchmark", API_BASE_URL);
+  url.searchParams.set("num_texts", String(numTexts));
+
+  const response = await fetch(url, { method: "POST", signal });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return benchmarkResultSchema.parse(await response.json());
+}
