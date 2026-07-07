@@ -1,3 +1,11 @@
+> **Update (2026-07-08): notebook storage persists across session stop/restart**, including `/opt/venv` where dependencies get installed. If you've already run this once today, skip straight to:
+> ```bash
+> cd /workspace/ResearchOS-AI-Research-Assistant/backend
+> source /opt/venv/bin/activate
+> uvicorn app.main:app --host 0.0.0.0 --port 8000
+> ```
+> No need to re-clone or re-`pip install`. Full results from the first run are in `docs/gpu_evidence.md`. The steps below are for a fresh notebook/environment only.
+
 # Running Phase 2 on the AMD ROCm notebook
 
 This machine (Windows, Intel GPU) can't install `chromadb` (no prebuilt Windows
@@ -8,7 +16,15 @@ notebook once you have GPU access:
 
 ## 1. Sync the code
 
-Copy/clone the `backend/` folder to the notebook (same files, nothing notebook-specific to change).
+```bash
+git clone https://github.com/UciferAariz/ResearchOS-AI-Research-Assistant.git
+cd ResearchOS-AI-Research-Assistant/backend
+```
+
+If you get `server certificate verification failed. CAfile: none` (seen on the `hf-*` container image — missing CA bundle, unrelated to the repo), use:
+```bash
+git -c http.sslVerify=false clone https://github.com/UciferAariz/ResearchOS-AI-Research-Assistant.git
+```
 
 ## 2. Confirm ROCm is visible
 
@@ -17,12 +33,27 @@ rocm-smi
 rocminfo | grep -i "gfx\|Marketing"
 ```
 
-Note the ROCm version (e.g. `6.1`) — you need the matching PyTorch wheel index below.
+Note the ROCm version and `gfx` arch (e.g. `gfx1100`) — you need the matching PyTorch wheel index below, *unless* torch is already preinstalled (see step 3).
 
-## 3. Create a venv and install dependencies
+## 3. Check for a preinstalled torch+ROCm venv before installing anything
+
+This container image had ROCm PyTorch **already installed** at `/opt/venv` (not the base `python3`/`pip3`) — check before spending time on a fresh install:
 
 ```bash
-cd backend
+which -a python python3
+ls /opt
+source /opt/venv/bin/activate   # if it exists
+python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+```
+
+If that prints `True`, skip straight to installing just the missing Phase 2 packages into this same venv:
+```bash
+pip install -r requirements-rocm.txt   # sentence-transformers + chromadb only — torch already present
+pip install -r requirements.txt
+```
+
+**Only if no preinstalled torch+ROCm venv exists**, build one from scratch:
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -43,6 +74,12 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 
 Expected: `True <AMD GPU name> 2.x.x+rocm6.1` (or similar). If this prints `False`,
 stop here and fix the torch/ROCm install — don't move on to the app yet.
+
+Note: `get_device_name(0)` returned an **empty string** on the `gfx1100`/ROCm 7.2
+container we tested on, even though `is_available()` was `True` and the GPU worked
+correctly for embeddings — a cosmetic quirk of that build, not a real problem. If
+you hit the same thing, confirm the GPU identity via `rocm-smi --showproductname`
+or `rocminfo | grep -i gfx` instead.
 
 ## 5. Run the backend
 
