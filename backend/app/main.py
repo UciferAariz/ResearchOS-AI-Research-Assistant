@@ -9,9 +9,10 @@ from app.config.logging_config import configure_logging
 from app.config.settings import get_settings
 from app.database.chroma_store import ChromaVectorStore
 from app.embeddings.sentence_transformer_service import SentenceTransformerEmbeddingService
-from app.routes import embeddings, health, search, similarity
+from app.routes import embeddings, health, papers, search, similarity
 from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
+from app.services.llm.fireworks_provider import FireworksLLMProvider
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -36,6 +37,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         batch_size=settings.embedding_batch_size,
     )
     app.state.vector_store = ChromaVectorStore(persist_directory=settings.chroma_persist_directory)
+    app.state.llm_provider = FireworksLLMProvider(
+        api_key=settings.fireworks_api_key,
+        model=settings.fireworks_model,
+        base_url=settings.fireworks_base_url,
+        timeout_seconds=settings.fireworks_request_timeout_seconds,
+    )
+    app.state.summary_cache = TTLCacheService(
+        maxsize=settings.summary_cache_max_size,
+        ttl_seconds=settings.summary_cache_ttl_seconds,
+    )
 
     logger.info("%s starting up (environment=%s)", settings.app_name, settings.environment)
     yield
@@ -58,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(search.router)
     app.include_router(embeddings.router)
     app.include_router(similarity.router)
+    app.include_router(papers.router)
 
     return app
 

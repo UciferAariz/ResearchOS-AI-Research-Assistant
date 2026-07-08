@@ -17,3 +17,7 @@ class EmbeddingError(ResearchOSError):
 
 class RAGRetrievalError(ResearchOSError):
     """Raised when retrieval from the vector store fails."""
+
+
+class LLMError(ResearchOSError):
+    """Raised when an LLM completion fails or returns unusable output."""

@@ -79,3 +79,28 @@ class ArxivClient:
             except (KeyError, ValueError) as exc:
                 logger.warning("Skipping malformed arXiv entry %s: %s", entry.get("id"), exc)
         return papers
+
+    @external_api_retry
+    async def get_by_id(self, paper_id: str) -> Paper | None:
+        params = {"id_list": paper_id}
+        try:
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(self._timeout_seconds), follow_redirects=True
+            ) as client:
+                response = await client.get(self._base_url, params=params)
+                response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise ExternalAPIError(
+                f"arXiv API returned {exc.response.status_code}", retryable=False
+            ) from exc
+        except (httpx.TimeoutException, httpx.NetworkError) as exc:
+            raise ExternalAPIError(f"arXiv API request failed: {exc}", retryable=True) from exc
+
+        feed = feedparser.parse(response.text)
+        if not feed.entries:
+            return None
+        try:
+            return _entry_to_paper(feed.entries[0])
+        except (KeyError, ValueError) as exc:
+            logger.warning("Malformed arXiv entry for id %s: %s", paper_id, exc)
+            return None

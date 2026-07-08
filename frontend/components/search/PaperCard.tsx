@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,11 @@ export function PaperCard({ paper, index }: PaperCardProps) {
     >
       <Card className="h-full transition-colors hover:border-primary/40">
         <CardHeader>
-          <CardTitle className="text-base leading-snug">{paper.title}</CardTitle>
+          <CardTitle className="text-base leading-snug">
+            <Link href={`/papers/${encodeURIComponent(paper.id)}`} className="hover:underline">
+              {paper.title}
+            </Link>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground">

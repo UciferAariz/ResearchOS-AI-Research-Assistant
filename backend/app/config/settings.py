@@ -28,10 +28,13 @@ class Settings(BaseSettings):
     # ChromaDB — absolute path so persistence doesn't depend on the CWD uvicorn was launched from.
     chroma_persist_directory: str = str(BACKEND_ROOT / "chroma_data")
 
-    # Fireworks (wired in Phase 3, present now so .env.example is complete)
+    # Fireworks (Phase 3 — Gemma by default, Llama fallback documented in .env.example)
     fireworks_api_key: str = ""
     fireworks_model: str = "accounts/fireworks/models/gemma2-9b-it"
     fireworks_base_url: str = "https://api.fireworks.ai/inference/v1"
+    fireworks_request_timeout_seconds: float = 60.0
+    summary_cache_ttl_seconds: int = 3600
+    summary_cache_max_size: int = 256
 
 
 @lru_cache
