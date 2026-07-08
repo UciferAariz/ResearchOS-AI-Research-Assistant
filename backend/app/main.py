@@ -17,6 +17,7 @@ from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
 from app.services.llm.fireworks_provider import FireworksLLMProvider
 from app.services.pdf_service import PdfDownloader
+from app.services.pubmed_client import PubMedClient
 from app.services.upload_store import CompositePaperSourceClient, UploadedPaperStore
 
 configure_logging()
@@ -33,10 +34,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         base_url=settings.arxiv_api_base_url,
         timeout_seconds=settings.arxiv_request_timeout_seconds,
     )
+    app.state.pubmed_client = PubMedClient(
+        base_url=settings.pubmed_api_base_url,
+        timeout_seconds=settings.pubmed_request_timeout_seconds,
+        api_key=settings.pubmed_api_key,
+    )
     app.state.upload_store = UploadedPaperStore()
     app.state.paper_source = CompositePaperSourceClient(
         arxiv_client=app.state.arxiv_client,
         upload_store=app.state.upload_store,
+        pubmed_client=app.state.pubmed_client,
     )
     app.state.pdf_downloader = PdfDownloader(timeout_seconds=settings.pdf_download_timeout_seconds)
     app.state.search_cache = TTLCacheService(

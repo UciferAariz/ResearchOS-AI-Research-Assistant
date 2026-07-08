@@ -32,7 +32,7 @@ async def _resolve_papers(paper_ids: list[str], arxiv_client: PaperSourceClient)
             status_code=404,
             detail={
                 "error": "not_found",
-                "detail": f"No arXiv paper found with id(s): {', '.join(missing)}",
+                "detail": f"No paper found with id(s): {', '.join(missing)}",
                 "retryable": False,
             },
         )

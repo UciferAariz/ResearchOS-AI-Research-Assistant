@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     search_cache_ttl_seconds: int = 300
     search_cache_max_size: int = 256
 
+    # PubMed (NCBI E-utilities)
+    pubmed_api_base_url: str = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+    pubmed_request_timeout_seconds: float = 15.0
+    # Optional — without a key NCBI rate-limits to 3 req/s; with one, 10 req/s.
+    pubmed_api_key: str = ""
+
     # Embeddings (Phase 2 — ROCm GPU if available, CPU fallback otherwise)
     embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_batch_size: int = 32

@@ -25,8 +25,8 @@ RecommendationCache = TTLCacheService[RecommendationResponse]
 
 def get_arxiv_client(request: Request) -> PaperSourceClient:
     """Despite the name (kept for route/pipeline compatibility), this resolves
-    both arXiv ids and `upload-`-prefixed uploaded-PDF ids — see
-    CompositePaperSourceClient."""
+    arXiv ids, `pubmed:`-prefixed PubMed ids, and `upload-`-prefixed
+    uploaded-PDF ids — see CompositePaperSourceClient."""
     return cast(CompositePaperSourceClient, request.app.state.paper_source)
 
 

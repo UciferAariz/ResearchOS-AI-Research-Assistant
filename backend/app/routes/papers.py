@@ -76,7 +76,7 @@ async def get_paper(paper_id: str, arxiv_client: ArxivClientDep) -> Paper:
             status_code=404,
             detail={
                 "error": "not_found",
-                "detail": f"No arXiv paper found with id '{paper_id}'",
+                "detail": f"No paper found with id '{paper_id}'",
                 "retryable": False,
             },
         )
@@ -97,7 +97,7 @@ async def get_paper_summary(
             status_code=404,
             detail={
                 "error": "not_found",
-                "detail": f"No arXiv paper found with id '{paper_id}'",
+                "detail": f"No paper found with id '{paper_id}'",
                 "retryable": False,
             },
         )

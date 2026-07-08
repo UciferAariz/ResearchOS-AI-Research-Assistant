@@ -1,5 +1,11 @@
+import asyncio
+import logging
+
 from app.models.paper import Paper
 from app.services.interfaces import PaperSourceClient
+from app.services.pubmed_client import PUBMED_ID_PREFIX
+
+logger = logging.getLogger(__name__)
 
 UPLOAD_ID_PREFIX = "upload-"
 
@@ -23,18 +29,50 @@ class UploadedPaperStore:
 
 
 class CompositePaperSourceClient:
-    """PaperSourceClient that resolves arXiv ids via ArxivClient and
-    `upload-`-prefixed ids via the in-memory upload store, so routes and the
-    RAG pipeline can treat both paper sources identically."""
+    """PaperSourceClient that fans searches out across arXiv and PubMed and
+    routes id lookups by prefix: `upload-` to the in-memory upload store,
+    `pubmed:` to PubMedClient, everything else to ArxivClient. This lets
+    routes and the RAG pipeline treat all paper sources identically."""
 
-    def __init__(self, arxiv_client: PaperSourceClient, upload_store: UploadedPaperStore) -> None:
+    def __init__(
+        self,
+        arxiv_client: PaperSourceClient,
+        upload_store: UploadedPaperStore,
+        pubmed_client: PaperSourceClient | None = None,
+    ) -> None:
         self._arxiv_client = arxiv_client
         self._upload_store = upload_store
+        self._pubmed_client = pubmed_client
 
     async def search(self, query: str, max_results: int) -> list[Paper]:
-        return await self._arxiv_client.search(query, max_results)
+        if self._pubmed_client is None:
+            return await self._arxiv_client.search(query, max_results)
+
+        results = await asyncio.gather(
+            self._arxiv_client.search(query, max_results),
+            self._pubmed_client.search(query, max_results),
+            return_exceptions=True,
+        )
+        papers: list[Paper] = []
+        errors: list[BaseException] = []
+        for source_name, result in zip(("arxiv", "pubmed"), results):
+            if isinstance(result, BaseException):
+                logger.warning("Skipping %s search results: %s", source_name, result)
+                errors.append(result)
+                continue
+            papers.extend(result)
+
+        if errors and len(errors) == len(results):
+            # Every source failed — surface the first error rather than silently
+            # returning an empty result set.
+            raise errors[0]
+        return papers
 
     async def get_by_id(self, paper_id: str) -> Paper | None:
         if paper_id.startswith(UPLOAD_ID_PREFIX):
             return self._upload_store.get(paper_id)
+        if paper_id.startswith(PUBMED_ID_PREFIX):
+            if self._pubmed_client is None:
+                return None
+            return await self._pubmed_client.get_by_id(paper_id)
         return await self._arxiv_client.get_by_id(paper_id)
