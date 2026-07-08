@@ -26,12 +26,22 @@ async def chat(
         messages, citations = await pipeline.build_prompt(
             request.message, request.history, request.paper_id, request.top_k
         )
-        answer = await llm_provider.complete(messages, max_tokens=1024)
     except RAGRetrievalError as exc:
         raise HTTPException(
             status_code=502,
             detail={"error": "rag_retrieval_error", "detail": exc.detail, "retryable": exc.retryable},
         ) from exc
+    except ExternalAPIError as exc:
+        # Raised by the arXiv lookup inside build_prompt (auto-indexing an
+        # unseen paper_id), not the LLM call below — label it distinctly so
+        # arXiv outages aren't mistaken for Fireworks/LLM failures.
+        raise HTTPException(
+            status_code=502,
+            detail={"error": "paper_source_error", "detail": exc.detail, "retryable": exc.retryable},
+        ) from exc
+
+    try:
+        answer = await llm_provider.complete(messages, max_tokens=1024)
     except ExternalAPIError as exc:
         raise HTTPException(
             status_code=502,
