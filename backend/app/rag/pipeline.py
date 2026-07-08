@@ -31,16 +31,24 @@ class RAGPipeline:
         self._vector_store = vector_store
         self._collection = collection
 
-    async def _ensure_indexed(self, paper_id: str) -> None:
+    async def _ensure_indexed(self, paper_id: str) -> str:
         """Chat can be asked about a paper the user hasn't searched for yet
         (e.g. a direct link), so index its abstract on first mention rather
-        than requiring a prior /api/search call."""
+        than requiring a prior /api/search call.
+
+        Returns the canonical id the paper ended up indexed under. arXiv
+        normalizes ids to include a version suffix (e.g. `2501.00005` ->
+        `2501.00005v1`), so a caller-supplied unversioned id must be resolved
+        to that canonical form before it can be used as a retrieval filter —
+        otherwise the chunk is indexed under one id and queried under
+        another, and retrieval silently returns nothing.
+        """
         existing = await self._vector_store.get_embedding(self._collection, paper_id)
         if existing is not None:
-            return
+            return paper_id
         paper = await self._arxiv_client.get_by_id(paper_id)
         if paper is None:
-            return
+            return paper_id
         [embedding] = await self._embedding_service.embed_batch([paper.abstract])
         await self._vector_store.upsert(
             collection=self._collection,
@@ -56,14 +64,16 @@ class RAGPipeline:
                 }
             ],
         )
+        return paper.id
 
     async def build_prompt(
         self, query: str, history: list[ChatTurn], paper_id: str | None, top_k: int
     ) -> tuple[list[ChatMessage], list[Citation]]:
+        resolved_paper_id = paper_id
         if paper_id:
-            await self._ensure_indexed(paper_id)
+            resolved_paper_id = await self._ensure_indexed(paper_id)
 
-        matches = await self._retriever.retrieve(query, top_k=top_k, paper_id=paper_id)
+        matches = await self._retriever.retrieve(query, top_k=top_k, paper_id=resolved_paper_id)
         citations = [
             Citation(
                 index=i,
