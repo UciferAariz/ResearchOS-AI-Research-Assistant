@@ -10,8 +10,9 @@ from app.config.settings import get_settings
 from app.database.chroma_store import ChromaVectorStore
 from app.embeddings.sentence_transformer_service import SentenceTransformerEmbeddingService
 from app.rag.pipeline import RAGPipeline
+from app.rag.recommender import Recommender
 from app.rag.retriever import Retriever
-from app.routes import chat, compare, embeddings, health, papers, search, similarity
+from app.routes import chat, compare, embeddings, health, papers, recommendations, search, similarity
 from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
 from app.services.llm.fireworks_provider import FireworksLLMProvider
@@ -61,6 +62,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         maxsize=settings.comparison_cache_max_size,
         ttl_seconds=settings.comparison_cache_ttl_seconds,
     )
+    app.state.recommendation_cache = TTLCacheService(
+        maxsize=settings.recommendation_cache_max_size,
+        ttl_seconds=settings.recommendation_cache_ttl_seconds,
+    )
+    app.state.recommender = Recommender(
+        arxiv_client=app.state.paper_source,
+        embedding_service=app.state.embedding_service,
+    )
     app.state.retriever = Retriever(
         vector_store=app.state.vector_store,
         embedding_service=app.state.embedding_service,
@@ -99,6 +108,7 @@ def create_app() -> FastAPI:
     app.include_router(papers.router)
     app.include_router(chat.router)
     app.include_router(compare.router)
+    app.include_router(recommendations.router)
 
     return app
 

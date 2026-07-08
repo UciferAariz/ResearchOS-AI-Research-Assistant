@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { ChatPanel } from "@/components/chat/ChatPanel";
+import { RecommendationsPanel } from "@/components/papers/RecommendationsPanel";
 import { SummaryPanel } from "@/components/papers/SummaryPanel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,6 +75,15 @@ export default function PaperDetailsPage() {
             Ask About This Paper
           </h2>
           <ChatPanel paperId={paper.id} placeholder="Ask a question about this paper…" />
+        </div>
+      )}
+
+      {paper && (
+        <div className="space-y-3 border-t pt-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            You Might Also Like
+          </h2>
+          <RecommendationsPanel paperId={paper.id} />
         </div>
       )}
     </main>

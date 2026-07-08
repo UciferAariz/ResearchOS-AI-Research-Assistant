@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     pdf_download_timeout_seconds: float = 30.0
     pdf_upload_max_bytes: int = 25 * 1024 * 1024
 
+    # Recommendations (Phase 7)
+    recommendation_cache_ttl_seconds: int = 3600
+    recommendation_cache_max_size: int = 128
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ChatRequest } from "@/types/chat";
 import type { ComparisonRequest, ComparisonResult } from "@/types/comparison";
 import type { Paper, SearchResponse } from "@/types/paper";
+import type { RecommendationResponse } from "@/types/recommendation";
 import type { BenchmarkResult, VectorMatch } from "@/types/vector";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -165,6 +166,34 @@ export async function comparePapers(
   if (!response.ok) return handleErrorResponse(response);
 
   return comparisonResultSchema.parse(await response.json());
+}
+
+const recommendationResponseSchema = z.object({
+  seed_paper_ids: z.array(z.string()),
+  recommendations: z.array(
+    z.object({
+      paper: paperSchema,
+      similarity: z.number(),
+    }),
+  ),
+});
+
+export async function getRecommendations(
+  paperIds: string[],
+  maxResults = 10,
+  signal?: AbortSignal,
+): Promise<RecommendationResponse> {
+  const url = new URL("/api/recommendations", API_BASE_URL);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paper_ids: paperIds, max_results: maxResults }),
+    signal,
+  });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return recommendationResponseSchema.parse(await response.json());
 }
 
 export async function runEmbeddingBenchmark(

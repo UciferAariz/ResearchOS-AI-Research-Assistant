@@ -6,8 +6,10 @@ from app.database.interfaces import VectorStore
 from app.embeddings.interfaces import EmbeddingService
 from app.models.comparison import ComparisonResult
 from app.models.paper import SearchResponse
+from app.models.recommendation import RecommendationResponse
 from app.models.summary import PaperSummary
 from app.rag.pipeline import RAGPipeline
+from app.rag.recommender import Recommender
 from app.rag.retriever import Retriever
 from app.services.cache_service import TTLCacheService
 from app.services.interfaces import PaperSourceClient
@@ -18,6 +20,7 @@ from app.services.upload_store import CompositePaperSourceClient, UploadedPaperS
 SearchCache = TTLCacheService[SearchResponse]
 SummaryCache = TTLCacheService[PaperSummary]
 ComparisonCache = TTLCacheService[ComparisonResult]
+RecommendationCache = TTLCacheService[RecommendationResponse]
 
 
 def get_arxiv_client(request: Request) -> PaperSourceClient:
@@ -63,6 +66,14 @@ def get_comparison_cache(request: Request) -> ComparisonCache:
     return cast(ComparisonCache, request.app.state.comparison_cache)
 
 
+def get_recommender(request: Request) -> Recommender:
+    return cast(Recommender, request.app.state.recommender)
+
+
+def get_recommendation_cache(request: Request) -> RecommendationCache:
+    return cast(RecommendationCache, request.app.state.recommendation_cache)
+
+
 ArxivClientDep = Annotated[PaperSourceClient, Depends(get_arxiv_client)]
 UploadStoreDep = Annotated[UploadedPaperStore, Depends(get_upload_store)]
 SearchCacheDep = Annotated[SearchCache, Depends(get_search_cache)]
@@ -73,3 +84,5 @@ SummaryCacheDep = Annotated[SummaryCache, Depends(get_summary_cache)]
 RetrieverDep = Annotated[Retriever, Depends(get_retriever)]
 RAGPipelineDep = Annotated[RAGPipeline, Depends(get_rag_pipeline)]
 ComparisonCacheDep = Annotated[ComparisonCache, Depends(get_comparison_cache)]
+RecommenderDep = Annotated[Recommender, Depends(get_recommender)]
+RecommendationCacheDep = Annotated[RecommendationCache, Depends(get_recommendation_cache)]
