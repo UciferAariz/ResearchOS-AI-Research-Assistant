@@ -1,7 +1,7 @@
 import json
 import logging
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query
 from sse_starlette.sse import EventSourceResponse
@@ -38,7 +38,7 @@ async def _generate_summary(paper: Paper, llm_provider: LLMProvider) -> PaperSum
         methodology=str(parsed.get("methodology", "Not specified in abstract")),
         limitations=_as_string_list(parsed.get("limitations", "Not specified in abstract")),
         future_work=_as_string_list(parsed.get("future_work", "Not specified in abstract")),
-        generated_at=datetime.now(UTC),
+        generated_at=datetime.now(timezone.utc),
     )
 
 
