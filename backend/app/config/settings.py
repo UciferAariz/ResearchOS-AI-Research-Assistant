@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     summary_cache_ttl_seconds: int = 3600
     summary_cache_max_size: int = 256
 
+    # Comparison (Phase 5)
+    comparison_cache_ttl_seconds: int = 3600
+    comparison_cache_max_size: int = 128
+
 
 @lru_cache
 def get_settings() -> Settings:

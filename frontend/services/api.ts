@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ChatRequest } from "@/types/chat";
+import type { ComparisonRequest, ComparisonResult } from "@/types/comparison";
 import type { Paper, SearchResponse } from "@/types/paper";
 import type { BenchmarkResult, VectorMatch } from "@/types/vector";
 
@@ -121,6 +122,38 @@ export function buildChatStreamRequest(payload: ChatRequest): { url: string; ini
       body: JSON.stringify(payload),
     },
   };
+}
+
+const paperComparisonNoteSchema = z.object({
+  paper_id: z.string(),
+  title: z.string(),
+  unique_points: z.array(z.string()),
+});
+
+const comparisonResultSchema = z.object({
+  paper_ids: z.array(z.string()),
+  similarities: z.array(z.string()),
+  differences: z.array(z.string()),
+  per_paper: z.array(paperComparisonNoteSchema),
+  generated_at: z.string(),
+});
+
+export async function comparePapers(
+  paperIds: string[],
+  signal?: AbortSignal,
+): Promise<ComparisonResult> {
+  const url = new URL("/api/compare", API_BASE_URL);
+  const payload: ComparisonRequest = { paper_ids: paperIds };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal,
+  });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return comparisonResultSchema.parse(await response.json());
 }
 
 export async function runEmbeddingBenchmark(
