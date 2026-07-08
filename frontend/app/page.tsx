@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { GpuBenchmarkPanel } from "@/components/diagnostics/GpuBenchmarkPanel";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchResults } from "@/components/search/SearchResults";
@@ -13,6 +14,9 @@ export default function Home() {
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">ResearchOS</h1>
         <p className="text-sm text-muted-foreground">AI-powered Research Operating System</p>
+        <Link href="/chat" className="text-sm font-medium text-primary hover:underline">
+          Chat across indexed papers →
+        </Link>
       </div>
 
       <SearchBar onSearch={search} isLoading={isLoading} />

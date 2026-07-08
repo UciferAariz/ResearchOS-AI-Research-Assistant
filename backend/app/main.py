@@ -9,7 +9,9 @@ from app.config.logging_config import configure_logging
 from app.config.settings import get_settings
 from app.database.chroma_store import ChromaVectorStore
 from app.embeddings.sentence_transformer_service import SentenceTransformerEmbeddingService
-from app.routes import embeddings, health, papers, search, similarity
+from app.rag.pipeline import RAGPipeline
+from app.rag.retriever import Retriever
+from app.routes import chat, embeddings, health, papers, search, similarity
 from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
 from app.services.llm.fireworks_provider import FireworksLLMProvider
@@ -47,6 +49,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         maxsize=settings.summary_cache_max_size,
         ttl_seconds=settings.summary_cache_ttl_seconds,
     )
+    app.state.retriever = Retriever(
+        vector_store=app.state.vector_store,
+        embedding_service=app.state.embedding_service,
+        collection=settings.arxiv_collection_name,
+    )
+    app.state.rag_pipeline = RAGPipeline(
+        retriever=app.state.retriever,
+        arxiv_client=app.state.arxiv_client,
+        embedding_service=app.state.embedding_service,
+        vector_store=app.state.vector_store,
+        collection=settings.arxiv_collection_name,
+    )
 
     logger.info("%s starting up (environment=%s)", settings.app_name, settings.environment)
     yield
@@ -70,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(embeddings.router)
     app.include_router(similarity.router)
     app.include_router(papers.router)
+    app.include_router(chat.router)
 
     return app
 

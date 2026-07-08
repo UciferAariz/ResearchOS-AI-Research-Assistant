@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ChatRequest } from "@/types/chat";
 import type { Paper, SearchResponse } from "@/types/paper";
 import type { BenchmarkResult, VectorMatch } from "@/types/vector";
 
@@ -108,6 +109,18 @@ export function getPaperSummaryStreamUrl(paperId: string): string {
   const url = new URL(`/api/papers/${encodeURIComponent(paperId)}/summary`, API_BASE_URL);
   url.searchParams.set("stream", "true");
   return url.toString();
+}
+
+export function buildChatStreamRequest(payload: ChatRequest): { url: string; init: RequestInit } {
+  const url = new URL("/api/chat/stream", API_BASE_URL);
+  return {
+    url: url.toString(),
+    init: {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  };
 }
 
 export async function runEmbeddingBenchmark(
