@@ -68,7 +68,7 @@ async def get_paper(paper_id: str, arxiv_client: ArxivClientDep) -> Paper:
     return paper
 
 
-@router.get("/api/papers/{paper_id}/summary")
+@router.get("/api/papers/{paper_id}/summary", response_model=None)
 async def get_paper_summary(
     paper_id: str,
     arxiv_client: ArxivClientDep,
