@@ -9,11 +9,11 @@ from app.models.paper import SearchResponse
 from app.models.summary import PaperSummary
 from app.rag.pipeline import RAGPipeline
 from app.rag.retriever import Retriever
-from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
 from app.services.interfaces import PaperSourceClient
 from app.services.llm.fireworks_provider import FireworksLLMProvider
 from app.services.llm.interfaces import LLMProvider
+from app.services.upload_store import CompositePaperSourceClient, UploadedPaperStore
 
 SearchCache = TTLCacheService[SearchResponse]
 SummaryCache = TTLCacheService[PaperSummary]
@@ -21,7 +21,14 @@ ComparisonCache = TTLCacheService[ComparisonResult]
 
 
 def get_arxiv_client(request: Request) -> PaperSourceClient:
-    return cast(ArxivClient, request.app.state.arxiv_client)
+    """Despite the name (kept for route/pipeline compatibility), this resolves
+    both arXiv ids and `upload-`-prefixed uploaded-PDF ids — see
+    CompositePaperSourceClient."""
+    return cast(CompositePaperSourceClient, request.app.state.paper_source)
+
+
+def get_upload_store(request: Request) -> UploadedPaperStore:
+    return cast(UploadedPaperStore, request.app.state.upload_store)
 
 
 def get_search_cache(request: Request) -> SearchCache:
@@ -57,6 +64,7 @@ def get_comparison_cache(request: Request) -> ComparisonCache:
 
 
 ArxivClientDep = Annotated[PaperSourceClient, Depends(get_arxiv_client)]
+UploadStoreDep = Annotated[UploadedPaperStore, Depends(get_upload_store)]
 SearchCacheDep = Annotated[SearchCache, Depends(get_search_cache)]
 EmbeddingServiceDep = Annotated[EmbeddingService, Depends(get_embedding_service)]
 VectorStoreDep = Annotated[VectorStore, Depends(get_vector_store)]

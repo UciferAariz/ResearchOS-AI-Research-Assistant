@@ -31,23 +31,29 @@ export default function PaperDetailsPage() {
       {paper && (
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold leading-snug tracking-tight">{paper.title}</h1>
-          <p className="text-sm text-muted-foreground">{paper.authors.join(", ")}</p>
+          {paper.authors.length > 0 && (
+            <p className="text-sm text-muted-foreground">{paper.authors.join(", ")}</p>
+          )}
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
-              {new Date(paper.published).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
+              {paper.source === "upload"
+                ? "Uploaded PDF"
+                : new Date(paper.published).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
             </Badge>
-            <a
-              href={paper.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              View PDF →
-            </a>
+            {paper.pdf_url && (
+              <a
+                href={paper.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View PDF →
+              </a>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">{paper.abstract}</p>
         </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GpuBenchmarkPanel } from "@/components/diagnostics/GpuBenchmarkPanel";
+import { UploadPanel } from "@/components/papers/UploadPanel";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchResults } from "@/components/search/SearchResults";
 import { useSearch } from "@/hooks/useSearch";
@@ -25,6 +26,8 @@ export default function Home() {
       </div>
 
       <SearchBar onSearch={search} isLoading={isLoading} />
+
+      <UploadPanel />
 
       <SearchResults papers={papers} isLoading={isLoading} error={error} hasSearched={hasSearched} />
 

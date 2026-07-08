@@ -4,9 +4,13 @@ from app.database.interfaces import VectorStore
 from app.embeddings.interfaces import EmbeddingService
 from app.models.chat import ChatTurn, Citation
 from app.models.llm import ChatMessage
+from app.models.paper import Paper
+from app.rag.indexing import index_paper_text
 from app.rag.prompts import build_rag_messages
 from app.rag.retriever import Retriever
 from app.services.interfaces import PaperSourceClient
+from app.services.pdf_service import PdfDownloader, PdfExtractionError, extract_text
+from app.utils.exceptions import ExternalAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +28,36 @@ class RAGPipeline:
         embedding_service: EmbeddingService,
         vector_store: VectorStore,
         collection: str,
+        pdf_downloader: PdfDownloader,
     ) -> None:
         self._retriever = retriever
         self._arxiv_client = arxiv_client
         self._embedding_service = embedding_service
         self._vector_store = vector_store
         self._collection = collection
+        self._pdf_downloader = pdf_downloader
+
+    async def _indexing_text(self, paper: Paper) -> str:
+        """Prefer the full PDF text for grounding (Phase 6) over the abstract
+        alone, since most user questions ask about methodology/results/limitations
+        that never appear in the abstract. Falls back to the abstract whenever the
+        PDF can't be fetched or parsed (network failure, scanned/image-only PDF,
+        encrypted PDF) so chat never hard-fails just because full-text indexing did.
+        """
+        if not paper.pdf_url:
+            return paper.abstract
+        try:
+            pdf_bytes = await self._pdf_downloader.download(paper.pdf_url)
+            text = extract_text(pdf_bytes)
+        except (ExternalAPIError, PdfExtractionError) as exc:
+            logger.warning("Falling back to abstract for %s: %s", paper.id, exc)
+            return paper.abstract
+        return text if text.strip() else paper.abstract
 
     async def _ensure_indexed(self, paper_id: str) -> str:
         """Chat can be asked about a paper the user hasn't searched for yet
-        (e.g. a direct link), so index its abstract on first mention rather
-        than requiring a prior /api/search call.
+        (e.g. a direct link), so index it on first mention rather than
+        requiring a prior /api/search call.
 
         Returns the canonical id the paper ended up indexed under. arXiv
         normalizes ids to include a version suffix (e.g. `2501.00005` ->
@@ -49,20 +72,9 @@ class RAGPipeline:
         paper = await self._arxiv_client.get_by_id(paper_id)
         if paper is None:
             return paper_id
-        [embedding] = await self._embedding_service.embed_batch([paper.abstract])
-        await self._vector_store.upsert(
-            collection=self._collection,
-            ids=[paper.id],
-            embeddings=[embedding],
-            documents=[paper.abstract],
-            metadatas=[
-                {
-                    "paper_id": paper.id,
-                    "title": paper.title,
-                    "chunk_index": "0",
-                    "source": paper.source,
-                }
-            ],
+        text = await self._indexing_text(paper)
+        await index_paper_text(
+            self._vector_store, self._embedding_service, self._collection, paper, text
         )
         return paper.id
 

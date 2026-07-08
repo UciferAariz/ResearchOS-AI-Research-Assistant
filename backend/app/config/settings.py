@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     comparison_cache_ttl_seconds: int = 3600
     comparison_cache_max_size: int = 128
 
+    # PDF full-text ingestion (Phase 6)
+    pdf_download_timeout_seconds: float = 30.0
+    pdf_upload_max_bytes: int = 25 * 1024 * 1024
+
 
 @lru_cache
 def get_settings() -> Settings:

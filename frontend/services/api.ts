@@ -106,6 +106,17 @@ export async function getPaper(paperId: string, signal?: AbortSignal): Promise<P
   return paperSchema.parse(await response.json());
 }
 
+export async function uploadPaper(file: File, signal?: AbortSignal): Promise<Paper> {
+  const url = new URL("/api/papers/upload", API_BASE_URL);
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(url, { method: "POST", body: formData, signal });
+  if (!response.ok) return handleErrorResponse(response);
+
+  return paperSchema.parse(await response.json());
+}
+
 export function getPaperSummaryStreamUrl(paperId: string): string {
   const url = new URL(`/api/papers/${encodeURIComponent(paperId)}/summary`, API_BASE_URL);
   url.searchParams.set("stream", "true");

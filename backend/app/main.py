@@ -15,6 +15,8 @@ from app.routes import chat, compare, embeddings, health, papers, search, simila
 from app.services.arxiv_client import ArxivClient
 from app.services.cache_service import TTLCacheService
 from app.services.llm.fireworks_provider import FireworksLLMProvider
+from app.services.pdf_service import PdfDownloader
+from app.services.upload_store import CompositePaperSourceClient, UploadedPaperStore
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -30,6 +32,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         base_url=settings.arxiv_api_base_url,
         timeout_seconds=settings.arxiv_request_timeout_seconds,
     )
+    app.state.upload_store = UploadedPaperStore()
+    app.state.paper_source = CompositePaperSourceClient(
+        arxiv_client=app.state.arxiv_client,
+        upload_store=app.state.upload_store,
+    )
+    app.state.pdf_downloader = PdfDownloader(timeout_seconds=settings.pdf_download_timeout_seconds)
     app.state.search_cache = TTLCacheService(
         maxsize=settings.search_cache_max_size,
         ttl_seconds=settings.search_cache_ttl_seconds,
@@ -60,10 +68,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     app.state.rag_pipeline = RAGPipeline(
         retriever=app.state.retriever,
-        arxiv_client=app.state.arxiv_client,
+        arxiv_client=app.state.paper_source,
         embedding_service=app.state.embedding_service,
         vector_store=app.state.vector_store,
         collection=settings.arxiv_collection_name,
+        pdf_downloader=app.state.pdf_downloader,
     )
 
     logger.info("%s starting up (environment=%s)", settings.app_name, settings.environment)

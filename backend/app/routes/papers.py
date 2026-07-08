@@ -1,16 +1,28 @@
 import json
 import logging
+import uuid
 from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from sse_starlette.sse import EventSourceResponse
 
-from app.config.dependencies import ArxivClientDep, LLMProviderDep, SummaryCacheDep
+from app.config.dependencies import (
+    ArxivClientDep,
+    EmbeddingServiceDep,
+    LLMProviderDep,
+    SummaryCacheDep,
+    UploadStoreDep,
+    VectorStoreDep,
+)
+from app.config.settings import get_settings
 from app.models.paper import Paper
 from app.models.summary import PaperSummary
+from app.rag.indexing import index_paper_text
 from app.services.llm.interfaces import LLMProvider
 from app.services.llm.prompts import build_summary_messages
+from app.services.pdf_service import PdfExtractionError, extract_text
+from app.services.upload_store import UPLOAD_ID_PREFIX
 from app.utils.exceptions import ExternalAPIError, LLMError
 
 logger = logging.getLogger(__name__)
@@ -112,3 +124,76 @@ async def get_paper_summary(
 
     cache.set(paper_id, summary)
     return summary
+
+
+def _derive_title(text: str, filename: str) -> str:
+    for line in text.splitlines():
+        candidate = line.strip()
+        if len(candidate) >= 8:
+            return candidate[:200]
+    return filename.rsplit(".", 1)[0] or "Untitled upload"
+
+
+def _derive_abstract(text: str) -> str:
+    collapsed = " ".join(text.split())
+    return collapsed[:1000] if collapsed else "No extractable text found in this PDF."
+
+
+@router.post("/api/papers/upload", response_model=Paper)
+async def upload_paper(
+    vector_store: VectorStoreDep,
+    embedding_service: EmbeddingServiceDep,
+    upload_store: UploadStoreDep,
+    file: UploadFile = File(...),
+) -> Paper:
+    """Ingests a user-uploaded PDF: extracts its text, indexes it in chunks for
+    RAG chat (Phase 6), and registers it as a Paper so /api/papers/{id} and
+    /api/chat can address it just like an arXiv paper."""
+    settings = get_settings()
+
+    if file.content_type not in ("application/pdf", "application/octet-stream") and not (
+        file.filename or ""
+    ).lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "invalid_file_type", "detail": "Only PDF files are supported", "retryable": False},
+        )
+
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > settings.pdf_upload_max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail={
+                "error": "file_too_large",
+                "detail": f"PDF exceeds the {settings.pdf_upload_max_bytes // (1024 * 1024)}MB limit",
+                "retryable": False,
+            },
+        )
+
+    try:
+        text = extract_text(pdf_bytes)
+    except PdfExtractionError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"error": "pdf_extraction_error", "detail": str(exc), "retryable": False},
+        ) from exc
+
+    now = datetime.now(timezone.utc)
+    paper = Paper(
+        id=f"{UPLOAD_ID_PREFIX}{uuid.uuid4().hex[:12]}",
+        title=_derive_title(text, file.filename or "upload.pdf"),
+        authors=[],
+        abstract=_derive_abstract(text),
+        published=now,
+        updated=now,
+        pdf_url="",
+        source="upload",
+    )
+    upload_store.add(paper)
+
+    indexing_text = text if text.strip() else paper.abstract
+    await index_paper_text(
+        vector_store, embedding_service, settings.arxiv_collection_name, paper, indexing_text
+    )
+
+    return paper
