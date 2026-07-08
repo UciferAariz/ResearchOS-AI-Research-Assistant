@@ -27,7 +27,10 @@ def _as_string_list(value: object) -> list[str]:
 async def _generate_summary(paper: Paper, llm_provider: LLMProvider) -> PaperSummary:
     messages = build_summary_messages(paper, want_json=True)
     try:
-        raw = await llm_provider.complete(messages, json_mode=True)
+        # Reasoning models (e.g. deepseek-v4-pro) can spend a chunk of the token
+        # budget on internal reasoning before emitting the final JSON, so give
+        # this call more headroom than the 1024-token default.
+        raw = await llm_provider.complete(messages, json_mode=True, max_tokens=2048)
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise LLMError(f"Model did not return valid JSON: {exc}", retryable=True) from exc
