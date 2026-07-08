@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { RecommendationsPanel } from "@/components/papers/RecommendationsPanel";
+import { SourceBadge } from "@/components/papers/SourceBadge";
 import { SummaryPanel } from "@/components/papers/SummaryPanel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +37,7 @@ export default function PaperDetailsPage() {
             <p className="text-sm text-muted-foreground">{paper.authors.join(", ")}</p>
           )}
           <div className="flex items-center gap-2">
+            <SourceBadge source={paper.source} />
             <Badge variant="secondary">
               {paper.source === "upload"
                 ? "Uploaded PDF"

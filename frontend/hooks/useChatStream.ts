@@ -60,7 +60,9 @@ export function useChatStream() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+        // sse-starlette terminates events with "\r\n\r\n" by default; normalize
+        // to "\n\n" so the boundary search below works regardless of separator.
+        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
 
         let boundary = buffer.indexOf("\n\n");
         while (boundary !== -1) {
@@ -68,7 +70,10 @@ export function useChatStream() {
           buffer = buffer.slice(boundary + 2);
 
           const eventType = rawEvent.match(/^event:\s*(.*)$/m)?.[1]?.trim() ?? "message";
-          const data = rawEvent.match(/^data:\s*(.*)$/m)?.[1] ?? "";
+          // Only a single leading space after "data:" is part of the SSE framing
+          // (spec: field-value strips one optional space) — using \s* here would
+          // also eat a token's own leading space (e.g. " the"), gluing words together.
+          const data = rawEvent.match(/^data: ?(.*)$/m)?.[1] ?? "";
 
           if (eventType === "citations") {
             citations = data ? (JSON.parse(data) as Citation[]) : [];

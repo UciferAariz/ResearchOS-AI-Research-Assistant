@@ -10,11 +10,15 @@ export function CitationList({ citations }: CitationListProps) {
   if (citations.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 border-t pt-2">
+    <div className="flex flex-wrap gap-1.5">
       {citations.map((citation) => (
         <Link key={citation.index} href={`/papers/${encodeURIComponent(citation.paper_id)}`}>
-          <Badge variant="outline" className="cursor-pointer hover:bg-accent" title={citation.snippet}>
-            [{citation.index}] {citation.title}
+          <Badge
+            variant="outline"
+            className="max-w-[16rem] cursor-pointer truncate border-border/60 bg-background/60 hover:border-brand/50 hover:bg-accent"
+            title={citation.snippet}
+          >
+            <span className="text-brand">[{citation.index}]</span> {citation.title}
           </Badge>
         </Link>
       ))}

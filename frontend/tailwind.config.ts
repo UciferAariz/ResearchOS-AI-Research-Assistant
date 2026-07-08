@@ -43,6 +43,15 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        brand: {
+          DEFAULT: "var(--brand)",
+          secondary: "var(--brand-secondary)",
+        },
+        source: {
+          arxiv: "var(--source-arxiv)",
+          pubmed: "var(--source-pubmed)",
+          upload: "var(--source-upload)",
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",

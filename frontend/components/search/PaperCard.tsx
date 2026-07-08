@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SourceBadge } from "@/components/papers/SourceBadge";
 import type { Paper } from "@/types/paper";
 import { SimilarPapers } from "./SimilarPapers";
 
@@ -30,6 +31,7 @@ export function PaperCard({ paper, index }: PaperCardProps) {
     >
       <Card className="h-full transition-colors hover:border-primary/40">
         <CardHeader>
+          <SourceBadge source={paper.source} className="mb-1 w-fit" />
           <CardTitle className="text-base leading-snug">
             <Link href={`/papers/${encodeURIComponent(paper.id)}`} className="hover:underline">
               {paper.title}
