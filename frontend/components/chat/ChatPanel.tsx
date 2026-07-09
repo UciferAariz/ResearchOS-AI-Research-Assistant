@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useChatStream } from "@/hooks/useChatStream";
+import { useSessionStorageState } from "@/hooks/useSessionStorageState";
 import type { ChatTurn, Citation } from "@/types/chat";
 import { CitationList } from "./CitationList";
 
@@ -69,7 +70,13 @@ function Bubble({
 }
 
 export function ChatPanel({ paperId, placeholder = "Ask a question…" }: ChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Keyed per paper (or "global" for the standalone /chat tab) so history
+  // persists across tab switches and refreshes for the lifetime of the
+  // browser tab, without mixing a paper-scoped conversation with another.
+  const [messages, setMessages] = useSessionStorageState<Message[]>(
+    `researchos:chat-messages:${paperId ?? "global"}`,
+    [],
+  );
   const [input, setInput] = useState("");
   const { answer, citations, isStreaming, error, ask } = useChatStream();
   const scrollAnchorRef = useRef<HTMLDivElement>(null);

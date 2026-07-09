@@ -1,9 +1,10 @@
 "use client";
 
 import { Plus, Scale, X } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSessionStorageState } from "@/hooks/useSessionStorageState";
 
 interface ComparisonFormProps {
   onCompare: (paperIds: string[]) => void;
@@ -14,7 +15,7 @@ const MIN_PAPERS = 2;
 const MAX_PAPERS = 5;
 
 export function ComparisonForm({ onCompare, isLoading }: ComparisonFormProps) {
-  const [paperIds, setPaperIds] = useState<string[]>(["", ""]);
+  const [paperIds, setPaperIds] = useSessionStorageState<string[]>("researchos:compare-ids", ["", ""]);
 
   const trimmedIds = paperIds.map((id) => id.trim()).filter(Boolean);
   const canSubmit = trimmedIds.length >= MIN_PAPERS && !isLoading;

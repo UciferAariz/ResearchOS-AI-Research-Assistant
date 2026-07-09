@@ -2,38 +2,43 @@
 
 import { useCallback, useRef, useState } from "react";
 import { ApiError, comparePapers } from "@/services/api";
+import { useSessionStorageState } from "@/hooks/useSessionStorageState";
 import type { ComparisonResult } from "@/types/comparison";
 
-interface UseComparisonState {
-  result: ComparisonResult | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
 export function useComparison() {
-  const [state, setState] = useState<UseComparisonState>({
-    result: null,
-    isLoading: false,
-    error: null,
-  });
+  // result/error survive tab switches and refresh (sessionStorage); isLoading
+  // stays plain local state since a stuck "loading" flag from a request that
+  // never finished (e.g. the tab was refreshed mid-request) would be wrong.
+  const [result, setResult] = useSessionStorageState<ComparisonResult | null>(
+    "researchos:compare-result",
+    null,
+  );
+  const [error, setError] = useSessionStorageState<string | null>("researchos:compare-error", null);
+  const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  const compare = useCallback(async (paperIds: string[]) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const compare = useCallback(
+    async (paperIds: string[]) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setState({ result: null, isLoading: true, error: null });
+      setResult(null);
+      setError(null);
+      setIsLoading(true);
 
-    try {
-      const result = await comparePapers(paperIds, controller.signal);
-      setState({ result, isLoading: false, error: null });
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      const message = err instanceof ApiError ? err.message : "Something went wrong while comparing.";
-      setState({ result: null, isLoading: false, error: message });
-    }
-  }, []);
+      try {
+        const comparison = await comparePapers(paperIds, controller.signal);
+        setResult(comparison);
+        setIsLoading(false);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setError(err instanceof ApiError ? err.message : "Something went wrong while comparing.");
+        setIsLoading(false);
+      }
+    },
+    [setResult, setError],
+  );
 
-  return { ...state, compare };
+  return { result, isLoading, error, compare };
 }
