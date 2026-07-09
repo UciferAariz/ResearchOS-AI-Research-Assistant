@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Navbar } from "@/components/layout/Navbar";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Spectral } from "next/font/google";
+import { Sidebar } from "@/components/layout/Sidebar";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-sans",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
+});
+const spectral = Spectral({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-spectral",
 });
 
 export const metadata: Metadata = {
-  title: "ResearchOS",
+  title: "Corpus — research OS",
   description: "AI-powered Research Operating System",
 };
 
@@ -26,9 +32,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <Navbar />
-        {children}
+      <body
+        className={`${plexSans.variable} ${plexMono.variable} ${spectral.variable} flex h-screen w-full overflow-hidden bg-background font-sans text-foreground antialiased`}
+      >
+        <Sidebar />
+        <div className="relative min-w-0 flex-1 overflow-y-auto">{children}</div>
       </body>
     </html>
   );

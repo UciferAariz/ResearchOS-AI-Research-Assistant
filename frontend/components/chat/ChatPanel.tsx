@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useChatStream } from "@/hooks/useChatStream";
 import { useSessionStorageState } from "@/hooks/useSessionStorageState";
+import { recordActivity } from "@/lib/activity";
 import type { ChatTurn, Citation } from "@/types/chat";
 import { CitationList } from "./CitationList";
 
@@ -100,6 +101,12 @@ export function ChatPanel({ paperId, placeholder = "Ask a question…" }: ChatPa
         ...prev,
         { role: "assistant", content: result.answer, citations: result.citations },
       ]);
+      recordActivity({
+        kind: "chat",
+        title: message,
+        detail: `${result.citations.length} source${result.citations.length === 1 ? "" : "s"} cited`,
+        href: paperId ? `/papers/${encodeURIComponent(paperId)}` : "/chat",
+      });
     }
   }
 

@@ -1,35 +1,29 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { MessageSquare } from "lucide-react";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 
 export default function ChatPage() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col items-center">
-      <div className="bg-hero-glow absolute inset-x-0 top-0 h-[24rem] w-full" aria-hidden />
-
-      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="space-y-2"
-        >
-          <span className="flex items-center gap-1.5 text-xs font-medium text-brand">
-            <MessageSquare className="size-3.5" />
-            Research Chat
-          </span>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Chat with your <span className="text-gradient-brand">indexed papers</span>
-          </h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Ask questions across every paper indexed so far. Answers cite the specific papers they
-            draw from — search for a paper first if it hasn&apos;t come up.
-          </p>
-        </motion.div>
-        <ChatPanel placeholder="Ask about the papers you've searched…" />
+    <div className="flex h-full min-h-screen w-full flex-col">
+      <div className="flex items-center gap-3 border-b border-border/60 px-10 py-[18px]">
+        <div className="flex size-[30px] flex-none items-center justify-center rounded-[9px] bg-gradient-to-br from-brand to-brand-secondary">
+          <div className="size-[11px] rounded-[3px] border-2 border-background" />
+        </div>
+        <div>
+          <div className="font-serif text-base font-medium">Ask your research assistant</div>
+          <div className="text-[11.5px] text-muted-foreground">Answers cite the papers they draw from</div>
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 rounded-full border border-brand-secondary/30 px-[11px] py-[5px] font-mono text-[10.5px] text-brand-secondary">
+          <span className="size-1.5 rounded-full bg-brand-secondary" />
+          Agent online
+        </div>
       </div>
-    </main>
+
+      <div className="flex-1 overflow-y-auto px-10 py-8">
+        <div className="mx-auto max-w-[780px]">
+          <ChatPanel placeholder="Ask about the papers you've searched…" />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { ApiError, comparePapers } from "@/services/api";
 import { useSessionStorageState } from "@/hooks/useSessionStorageState";
+import { recordActivity } from "@/lib/activity";
 import type { ComparisonResult } from "@/types/comparison";
 
 export function useComparison() {
@@ -31,6 +32,12 @@ export function useComparison() {
         const comparison = await comparePapers(paperIds, controller.signal);
         setResult(comparison);
         setIsLoading(false);
+        recordActivity({
+          kind: "compare",
+          title: paperIds.join(" vs. "),
+          detail: `${paperIds.length} papers compared`,
+          href: "/compare",
+        });
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         setError(err instanceof ApiError ? err.message : "Something went wrong while comparing.");

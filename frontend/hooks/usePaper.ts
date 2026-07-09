@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ApiError, getPaper } from "@/services/api";
+import { recordActivity } from "@/lib/activity";
 import type { Paper } from "@/types/paper";
 
 interface UsePaperState {
@@ -22,7 +23,18 @@ export function usePaper(paperId: string) {
     setState({ paper: null, isLoading: true, error: null });
 
     getPaper(paperId, controller.signal)
-      .then((paper) => setState({ paper, isLoading: false, error: null }))
+      .then((paper) => {
+        setState({ paper, isLoading: false, error: null });
+        recordActivity({
+          kind: "read",
+          title: paper.title,
+          detail:
+            paper.source === "upload"
+              ? "Uploaded"
+              : `${paper.source === "arxiv" ? "arXiv" : "PubMed"} · ${new Date(paper.published).getFullYear()}`,
+          href: `/papers/${encodeURIComponent(paper.id)}`,
+        });
+      })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
         const message = err instanceof ApiError ? err.message : "Could not load this paper.";
