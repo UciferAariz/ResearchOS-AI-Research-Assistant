@@ -126,7 +126,7 @@ export function Sidebar() {
       <nav className="flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
           const active = item.match(pathname ?? "");
-          const href = item.href ?? lastPaperHref ?? "/history";
+          const href = item.href ?? lastPaperHref ?? "/discover";
           return (
             <Link
               key={item.label}

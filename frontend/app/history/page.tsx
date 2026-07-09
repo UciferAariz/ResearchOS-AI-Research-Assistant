@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getActivity, groupActivityByDay, type ActivityItem, type ActivityKind } from "@/lib/activity";
@@ -21,6 +22,7 @@ const KIND_META: Record<ActivityKind, { color: string; tint: string; dot: string
 };
 
 export default function HistoryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [filter, setFilter] = useState<ActivityKind | "all">("all");
 
@@ -34,6 +36,14 @@ export default function HistoryPage() {
   return (
     <div className="min-h-full w-full overflow-y-auto">
       <div className="mx-auto max-w-[860px] px-11 pb-16 pt-10">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-6 inline-flex items-center gap-2 rounded-[9px] border border-border/60 px-3 py-[7px] text-[12.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          ← Back
+        </button>
+
         <div className="mb-[30px]">
           <h1 className="mb-2 font-serif text-[30px] font-medium tracking-[-0.3px]">History &amp; journal</h1>
           <p className="text-[14.5px] text-muted-foreground">

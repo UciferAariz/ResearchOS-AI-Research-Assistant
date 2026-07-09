@@ -151,15 +151,16 @@ export default function Home() {
                 </span>
                 Compare papers side by side
               </Link>
-              <a
-                href="#upload"
-                className="flex items-center gap-3.5 rounded-xl p-3 text-sm transition-colors hover:bg-accent/50"
+              <button
+                type="button"
+                onClick={() => document.getElementById("upload")?.scrollIntoView({ behavior: "smooth" })}
+                className="flex items-center gap-3.5 rounded-xl p-3 text-left text-sm transition-colors hover:bg-accent/50"
               >
                 <span className="flex size-[38px] flex-none items-center justify-center rounded-[10px] bg-source-upload/12 text-source-upload">
                   <Upload className="size-4" />
                 </span>
                 Upload a PDF to your library
-              </a>
+              </button>
             </div>
           </div>
         </div>
