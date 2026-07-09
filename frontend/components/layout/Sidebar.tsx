@@ -99,7 +99,7 @@ export function Sidebar() {
       if (!seen.has(item.href)) seen.set(item.href, item.detail);
     }
     const counts: Record<string, number> = { arxiv: 0, pubmed: 0, upload: 0 };
-    for (const detail of seen.values()) {
+    for (const detail of Array.from(seen.values())) {
       const lower = detail.toLowerCase();
       if (lower.includes("pubmed")) counts.pubmed += 1;
       else if (lower.includes("uploaded")) counts.upload += 1;
