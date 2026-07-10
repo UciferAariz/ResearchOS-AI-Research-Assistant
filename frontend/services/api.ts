@@ -136,17 +136,23 @@ export function buildChatStreamRequest(payload: ChatRequest): { url: string; ini
   };
 }
 
-const paperComparisonNoteSchema = z.object({
+const comparisonPaperSummarySchema = z.object({
   paper_id: z.string(),
   title: z.string(),
-  unique_points: z.array(z.string()),
+  authors: z.array(z.string()),
+  source: z.enum(["arxiv", "pubmed", "upload"]),
+});
+
+const comparisonDimensionSchema = z.object({
+  label: z.string(),
+  values: z.array(z.string()),
 });
 
 const comparisonResultSchema = z.object({
   paper_ids: z.array(z.string()),
-  similarities: z.array(z.string()),
-  differences: z.array(z.string()),
-  per_paper: z.array(paperComparisonNoteSchema),
+  papers: z.array(comparisonPaperSummarySchema),
+  dimensions: z.array(comparisonDimensionSchema),
+  assistant_take: z.string(),
   generated_at: z.string(),
 });
 

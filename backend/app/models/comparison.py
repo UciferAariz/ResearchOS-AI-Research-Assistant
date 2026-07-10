@@ -7,15 +7,22 @@ class ComparisonRequest(BaseModel):
     paper_ids: list[str] = Field(..., min_length=2, max_length=5)
 
 
-class PaperComparisonNote(BaseModel):
+class ComparisonPaperSummary(BaseModel):
     paper_id: str
     title: str
-    unique_points: list[str]
+    authors: list[str]
+    source: str
+
+
+class ComparisonDimension(BaseModel):
+    label: str
+    # One value per paper, in the same order as `ComparisonResult.paper_ids`.
+    values: list[str]
 
 
 class ComparisonResult(BaseModel):
     paper_ids: list[str]
-    similarities: list[str]
-    differences: list[str]
-    per_paper: list[PaperComparisonNote]
+    papers: list[ComparisonPaperSummary]
+    dimensions: list[ComparisonDimension]
+    assistant_take: str
     generated_at: datetime

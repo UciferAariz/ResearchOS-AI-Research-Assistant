@@ -8,7 +8,12 @@ from fastapi import APIRouter, HTTPException
 from sse_starlette.sse import EventSourceResponse
 
 from app.config.dependencies import ArxivClientDep, ComparisonCacheDep, LLMProviderDep
-from app.models.comparison import ComparisonRequest, ComparisonResult, PaperComparisonNote
+from app.models.comparison import (
+    ComparisonDimension,
+    ComparisonPaperSummary,
+    ComparisonRequest,
+    ComparisonResult,
+)
 from app.models.paper import Paper
 from app.services.interfaces import PaperSourceClient
 from app.services.llm.interfaces import LLMProvider
@@ -56,23 +61,33 @@ async def _generate_comparison(papers: list[Paper], llm_provider: LLMProvider) -
     except json.JSONDecodeError as exc:
         raise LLMError(f"Model did not return valid JSON: {exc}", retryable=True) from exc
 
-    per_paper_raw = parsed.get("per_paper", [])
-    if not isinstance(per_paper_raw, list):
-        per_paper_raw = []
-    per_paper = [
-        PaperComparisonNote(
-            paper_id=str(entry.get("paper_id", paper.id)),
-            title=str(entry.get("title", paper.title)),
-            unique_points=_as_string_list(entry.get("unique_points", "Not specified in abstract")),
+    dimensions_raw = parsed.get("dimensions", [])
+    if not isinstance(dimensions_raw, list):
+        dimensions_raw = []
+    dimensions = [
+        ComparisonDimension(
+            label=str(entry.get("label", "Comparison")),
+            # The model's per-paper `values` can come back short if it drops
+            # a paper — pad with "Not specified" rather than misaligning the
+            # remaining values against the wrong paper column.
+            values=(_as_string_list(entry.get("values", [])) + ["Not specified in abstract"] * len(papers))[
+                : len(papers)
+            ],
         )
-        for entry, paper in zip(per_paper_raw, papers)
+        for entry in dimensions_raw
+        if isinstance(entry, dict)
     ]
 
     return ComparisonResult(
         paper_ids=[paper.id for paper in papers],
-        similarities=_as_string_list(parsed.get("similarities", "Not specified in abstracts")),
-        differences=_as_string_list(parsed.get("differences", "Not specified in abstracts")),
-        per_paper=per_paper,
+        papers=[
+            ComparisonPaperSummary(
+                paper_id=paper.id, title=paper.title, authors=paper.authors, source=paper.source
+            )
+            for paper in papers
+        ],
+        dimensions=dimensions,
+        assistant_take=str(parsed.get("assistant_take", "")),
         generated_at=datetime.now(timezone.utc),
     )
 

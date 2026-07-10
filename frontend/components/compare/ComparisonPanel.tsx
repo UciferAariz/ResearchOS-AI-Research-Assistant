@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, FileText, GitCompare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ComparisonResult } from "@/types/comparison";
 import { cleanLatex } from "@/lib/latex";
+import { cn } from "@/lib/utils";
 
 interface ComparisonPanelProps {
   result: ComparisonResult | null;
@@ -13,33 +13,27 @@ interface ComparisonPanelProps {
   error: string | null;
 }
 
-function BulletList({ items, accent }: { items: string[]; accent: string }) {
-  return (
-    <ul className="space-y-2.5 text-sm text-muted-foreground">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-2.5">
-          <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${accent}`} />
-          <span className="leading-relaxed">{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+const SOURCE_LABEL: Record<string, string> = { arxiv: "arXiv", pubmed: "PubMed", upload: "Uploaded" };
+const SOURCE_COLOR: Record<string, string> = {
+  arxiv: "text-source-arxiv",
+  pubmed: "text-source-pubmed",
+  upload: "text-source-upload",
+};
 
 export function ComparisonPanel({ result, isLoading, error }: ComparisonPanelProps) {
   if (isLoading) {
     return (
-      <div className="w-full max-w-2xl space-y-3">
+      <div className="w-full space-y-3">
         <Skeleton className="h-24 w-full rounded-2xl" />
-        <Skeleton className="h-24 w-full rounded-2xl" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+        <Skeleton className="h-16 w-full rounded-2xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <p className="w-full max-w-2xl rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+      <p className="w-full rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
         {error}
       </p>
     );
@@ -47,57 +41,78 @@ export function ComparisonPanel({ result, isLoading, error }: ComparisonPanelPro
 
   if (!result) return null;
 
+  const columns = result.papers.length;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="w-full max-w-2xl space-y-4"
+      className="w-full space-y-4"
     >
-      <Card className="border-none bg-source-pubmed/10 ring-1 ring-source-pubmed/25">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-source-pubmed">
-            <CheckCircle2 className="size-4" />
-            Similarities
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BulletList items={result.similarities} accent="bg-source-pubmed" />
-        </CardContent>
-      </Card>
-
-      <Card className="border-none bg-source-upload/10 ring-1 ring-source-upload/25">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-source-upload">
-            <GitCompare className="size-4" />
-            Differences
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BulletList items={result.differences} accent="bg-source-upload" />
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {result.per_paper.map((note, i) => (
-          <Card key={note.paper_id} className="ring-1 ring-foreground/10">
-            <CardHeader>
-              <CardTitle className="flex items-start gap-2">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-secondary text-[0.65rem] font-semibold text-background">
-                  {i + 1}
+      <div className="overflow-x-auto rounded-2xl border border-border/60">
+        <div className="min-w-[720px]">
+          <div className="grid" style={{ gridTemplateColumns: `168px repeat(${columns}, 1fr)` }}>
+            <div className="border-b border-border/60 bg-secondary/40" />
+            {result.papers.map((paper) => (
+              <div
+                key={paper.paper_id}
+                className="border-b border-l border-border/60 bg-secondary/15 p-5"
+              >
+                <span
+                  className={cn(
+                    "font-mono text-[10px] uppercase tracking-[0.05em]",
+                    SOURCE_COLOR[paper.source] ?? "text-muted-foreground",
+                  )}
+                >
+                  {SOURCE_LABEL[paper.source] ?? paper.source}
                 </span>
-                <span className="flex items-start gap-1.5 leading-snug">
-                  <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                  {cleanLatex(note.title)}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BulletList items={note.unique_points} accent="bg-brand" />
-            </CardContent>
-          </Card>
-        ))}
+                <h3 className="mt-2 font-serif text-base font-medium leading-snug">
+                  {cleanLatex(paper.title)}
+                </h3>
+                <div className="mt-1.5 truncate text-xs text-muted-foreground">
+                  {paper.authors.join(", ") || "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {result.dimensions.map((dim, i) => (
+            <div
+              key={dim.label}
+              className="grid"
+              style={{
+                gridTemplateColumns: `168px repeat(${columns}, 1fr)`,
+                background: i % 2 === 1 ? "color-mix(in oklch, var(--secondary), transparent 60%)" : undefined,
+              }}
+            >
+              <div className="flex items-center border-b border-border/40 px-[18px] py-4 font-mono text-[11px] uppercase tracking-[0.05em] text-muted-foreground">
+                {dim.label}
+              </div>
+              {dim.values.map((value, j) => (
+                <div
+                  key={j}
+                  className="border-b border-l border-border/40 px-[18px] py-4 text-[13.5px] leading-relaxed text-foreground/90"
+                >
+                  {value}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
+
+      {result.assistant_take && (
+        <div className="flex items-start gap-3.5 rounded-2xl border border-brand-secondary/25 bg-gradient-to-b from-brand-secondary/10 to-transparent px-5 py-[18px]">
+          <div className="flex size-6 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-secondary">
+            <FileText className="size-3 text-background" />
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90">
+            <span className="font-semibold text-foreground">Assistant&apos;s take: </span>
+            {cleanLatex(result.assistant_take)}
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }

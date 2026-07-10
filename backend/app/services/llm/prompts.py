@@ -46,18 +46,24 @@ _COMPARISON_JSON_SYSTEM_PROMPT = (
     "You are a research paper comparison assistant. "
     + _COMPARISON_GROUNDING_RULE
     + " Respond with a single JSON object with exactly these keys: "
-    "similarities (array of strings describing what the papers have in common), "
-    "differences (array of strings describing how the papers diverge), "
-    "per_paper (array of objects, one per input paper in the same order, each with "
-    "keys paper_id, title, and unique_points (array of strings specific to that paper))."
+    "dimensions (array of 4-6 objects, each an axis worth comparing these specific "
+    "papers on — choose whichever dimensions are most informative for this particular "
+    "set, e.g. approach, memory/compute cost, retention or performance, data "
+    "requirements, ease of use, or best-fit use case; each object has keys 'label' "
+    "(a short 1-4 word name for the dimension) and 'values' (array of strings, one "
+    "per input paper, in the same order as given, describing that paper along this "
+    "dimension in a single short phrase or sentence)), "
+    "assistant_take (a 2-3 sentence recommendation on which paper suits which "
+    "priority, grounded only in the dimensions above — do not introduce any claim "
+    "that isn't already reflected in a dimension value)."
 )
 
 _COMPARISON_TEXT_SYSTEM_PROMPT = (
     "You are a research paper comparison assistant. "
     + _COMPARISON_GROUNDING_RULE
-    + " Produce a concise Markdown comparison with a '## Similarities' section, a "
-    "'## Differences' section, and one '### <title>' subsection per paper listing its "
-    "unique points."
+    + " Produce a concise Markdown comparison as a table with one row per dimension "
+    "(choose 4-6 dimensions most informative for these specific papers) and one "
+    "column per paper, followed by a short '## Assistant's take' recommendation."
 )
 
 

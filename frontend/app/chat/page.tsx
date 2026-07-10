@@ -21,7 +21,7 @@ export default function ChatPage() {
 
       <div className="flex-1 overflow-y-auto px-10 py-8">
         <div className="mx-auto max-w-[780px]">
-          <ChatPanel placeholder="Ask about the papers you've searched…" />
+          <ChatPanel placeholder="Ask a follow-up, or paste a DOI to add it to context…" />
         </div>
       </div>
     </div>

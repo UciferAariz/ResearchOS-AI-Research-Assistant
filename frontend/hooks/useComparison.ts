@@ -47,5 +47,12 @@ export function useComparison() {
     [setResult, setError],
   );
 
-  return { result, isLoading, error, compare };
+  const reset = useCallback(() => {
+    abortRef.current?.abort();
+    setResult(null);
+    setError(null);
+    setIsLoading(false);
+  }, [setResult, setError]);
+
+  return { result, isLoading, error, compare, reset };
 }
