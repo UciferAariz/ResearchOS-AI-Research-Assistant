@@ -269,13 +269,13 @@ export function ChatPanel({ paperId, placeholder = "Ask a question…", bare = f
   const isEmpty = messages.length === 0 && !isStreaming;
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div
         className={cn(
-          "flex min-h-[16rem] flex-1 flex-col",
+          "flex flex-1 flex-col",
           bare
-            ? "gap-[26px] overflow-y-auto"
-            : "gap-5 rounded-2xl border border-border/60 bg-secondary/20 p-4 sm:p-5",
+            ? "min-h-0 gap-[26px] overflow-y-auto"
+            : "min-h-[16rem] gap-5 rounded-2xl border border-border/60 bg-secondary/20 p-4 sm:p-5",
         )}
       >
         {isEmpty && (
