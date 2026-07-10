@@ -32,7 +32,14 @@ async def _index_papers(
             embeddings=embeddings,
             documents=abstracts,
             metadatas=[
-                {"paper_id": paper.id, "title": paper.title, "chunk_index": "0", "source": paper.source}
+                {
+                    "paper_id": paper.id,
+                    "title": paper.title,
+                    "chunk_index": "0",
+                    "source": paper.source,
+                    # Abstract-only: chat upgrades this to full text on first use.
+                    "full_text": "false",
+                }
                 for paper in papers
             ],
         )

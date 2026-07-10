@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SourceBadge } from "@/components/papers/SourceBadge";
 import type { Paper } from "@/types/paper";
+import { cleanLatex } from "@/lib/latex";
 import { SimilarPapers } from "./SimilarPapers";
 
 interface PaperCardProps {
@@ -34,7 +35,7 @@ export function PaperCard({ paper, index }: PaperCardProps) {
           <SourceBadge source={paper.source} className="mb-1 w-fit" />
           <CardTitle className="text-base leading-snug">
             <Link href={`/papers/${encodeURIComponent(paper.id)}`} className="hover:underline">
-              {paper.title}
+              {cleanLatex(paper.title)}
             </Link>
           </CardTitle>
         </CardHeader>
@@ -43,7 +44,7 @@ export function PaperCard({ paper, index }: PaperCardProps) {
             {paper.authors.slice(0, 3).join(", ")}
             {paper.authors.length > 3 ? ", et al." : ""}
           </p>
-          <p className="line-clamp-4 text-sm text-muted-foreground">{paper.abstract}</p>
+          <p className="line-clamp-4 text-sm text-muted-foreground">{cleanLatex(paper.abstract)}</p>
           <div className="flex items-center justify-between pt-1">
             <Badge variant="secondary">{publishedDate}</Badge>
             <a

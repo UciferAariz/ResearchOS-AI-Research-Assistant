@@ -9,10 +9,12 @@ _GROUNDING_RULE = (
     "like a normal assistant — do not mention sources or citations for these. "
     "For any question about paper content, findings, or claims, answer only "
     "using the numbered sources below: every factual claim must be followed by "
-    "a citation marker like [1] or [2] referencing the source it came from. If "
-    "the sources don't contain enough information to answer such a question, "
-    "say so explicitly rather than guessing or using outside knowledge. Never "
-    "fabricate a citation number that isn't listed below."
+    "a citation marker like [1] or [2] referencing the source it came from. When "
+    "a source is tagged with a page number, you may mention that page (e.g. "
+    "'on page 4 [2]') to help the user locate it, but never guess a page number "
+    "that isn't given. If the sources don't contain enough information to answer "
+    "such a question, say so explicitly rather than guessing or using outside "
+    "knowledge. Never fabricate a citation number that isn't listed below."
 )
 
 
@@ -21,7 +23,10 @@ def _format_sources(matches: list[VectorMatch]) -> str:
     for i, match in enumerate(matches, start=1):
         title = match.metadata.get("title", "Unknown title")
         paper_id = match.metadata.get("paper_id", match.id)
-        entries.append(f"[{i}] {title} (paper_id: {paper_id})\n{match.document}")
+        page = match.metadata.get("page")
+        header = f"[{i}] {title} (paper_id: {paper_id}"
+        header += f", page {page})" if page else ")"
+        entries.append(f"{header}\n{match.document}")
     return "\n\n".join(entries)
 
 

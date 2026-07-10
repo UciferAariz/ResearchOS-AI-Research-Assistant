@@ -7,6 +7,7 @@ import { SourceBadge } from "@/components/papers/SourceBadge";
 import { SummaryPanel } from "@/components/papers/SummaryPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePaper } from "@/hooks/usePaper";
+import { cleanLatex } from "@/lib/latex";
 
 export default function PaperDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -55,7 +56,7 @@ export default function PaperDetailsPage() {
                 )}
               </div>
               <h1 className="mb-3.5 font-serif text-[34px] font-medium leading-[1.18] tracking-[-0.4px]">
-                {paper.title}
+                {cleanLatex(paper.title)}
               </h1>
               {paper.authors.length > 0 && (
                 <div className="mb-6 text-sm text-muted-foreground">{paper.authors.join(", ")}</div>
@@ -72,7 +73,7 @@ export default function PaperDetailsPage() {
               </div>
 
               <h2 className="mb-3.5 font-serif text-[21px] font-medium">Abstract</h2>
-              <p className="mb-6 font-serif text-[15.5px] leading-[1.75] text-[#cfc8ba]">{paper.abstract}</p>
+              <p className="mb-6 font-serif text-[15.5px] leading-[1.75] text-[#cfc8ba]">{cleanLatex(paper.abstract)}</p>
 
               <div className="flex flex-wrap gap-2.5">
                 {paper.pdf_url && (

@@ -22,7 +22,9 @@ class VectorStore(Protocol):
         collection: str,
         embedding: list[float],
         top_k: int,
-        where: dict[str, str] | None = None,
+        where: dict[str, object] | None = None,
     ) -> list[VectorMatch]: ...
 
     async def get_embedding(self, collection: str, id: str) -> list[float] | None: ...
+
+    async def get_metadata(self, collection: str, id: str) -> dict[str, str] | None: ...

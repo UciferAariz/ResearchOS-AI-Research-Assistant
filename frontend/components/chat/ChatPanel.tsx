@@ -5,6 +5,7 @@ import { Sparkles, User, Send } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { cleanLatex } from "@/lib/latex";
 import { useChatStream } from "@/hooks/useChatStream";
 import { useSessionStorageState } from "@/hooks/useSessionStorageState";
 import { recordActivity } from "@/lib/activity";
@@ -129,13 +130,13 @@ export function ChatPanel({ paperId, placeholder = "Ask a question…" }: ChatPa
         <AnimatePresence initial={false}>
           {messages.map((message, i) => (
             <Bubble key={i} role={message.role} citations={message.citations}>
-              {message.content}
+              {cleanLatex(message.content)}
             </Bubble>
           ))}
 
           {isStreaming && (
             <Bubble key="streaming" role="assistant" citations={citations}>
-              {answer}
+              {cleanLatex(answer)}
               <span className="ml-0.5 inline-block h-3 w-1.5 animate-pulse bg-muted-foreground align-middle" />
             </Bubble>
           )}

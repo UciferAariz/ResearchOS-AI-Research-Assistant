@@ -5,6 +5,7 @@ import { CheckCircle2, FileText, GitCompare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ComparisonResult } from "@/types/comparison";
+import { cleanLatex } from "@/lib/latex";
 
 interface ComparisonPanelProps {
   result: ComparisonResult | null;
@@ -87,7 +88,7 @@ export function ComparisonPanel({ result, isLoading, error }: ComparisonPanelPro
                 </span>
                 <span className="flex items-start gap-1.5 leading-snug">
                   <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                  {note.title}
+                  {cleanLatex(note.title)}
                 </span>
               </CardTitle>
             </CardHeader>

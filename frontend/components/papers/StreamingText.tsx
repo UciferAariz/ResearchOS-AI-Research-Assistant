@@ -1,5 +1,7 @@
 "use client";
 
+import { cleanLatex } from "@/lib/latex";
+
 interface StreamingTextProps {
   text: string;
   isStreaming: boolean;
@@ -13,11 +15,11 @@ export function StreamingText({ text, isStreaming }: StreamingTextProps) {
       {lines.map((line, i) =>
         line.startsWith("## ") ? (
           <p key={i} className="pt-3 text-sm font-semibold text-foreground first:pt-0">
-            {line.slice(3)}
+            {cleanLatex(line.slice(3))}
           </p>
         ) : (
           <p key={i} className="whitespace-pre-wrap text-muted-foreground">
-            {line}
+            {cleanLatex(line)}
           </p>
         ),
       )}

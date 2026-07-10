@@ -52,7 +52,7 @@ class ChromaVectorStore:
         collection: str,
         embedding: list[float],
         top_k: int,
-        where: dict[str, str] | None = None,
+        where: dict[str, object] | None = None,
     ) -> list[VectorMatch]:
         try:
             coll = self._get_collection(collection)
@@ -95,3 +95,15 @@ class ChromaVectorStore:
         if embeddings is None or len(embeddings) == 0:
             return None
         return list(embeddings[0])
+
+    async def get_metadata(self, collection: str, id: str) -> dict[str, str] | None:
+        try:
+            coll = self._get_collection(collection)
+            result = await asyncio.to_thread(coll.get, ids=[id], include=["metadatas"])
+        except Exception as exc:
+            raise RAGRetrievalError(f"Vector store lookup failed: {exc}") from exc
+
+        metadatas = result.get("metadatas")
+        if not metadatas:
+            return None
+        return dict(metadatas[0])

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSimilarity } from "@/hooks/useSimilarity";
+import { cleanLatex } from "@/lib/latex";
 
 interface SimilarPapersProps {
   paperId: string;
@@ -37,7 +38,7 @@ export function SimilarPapers({ paperId }: SimilarPapersProps) {
       <ul className="space-y-1">
         {matches.map((match) => (
           <li key={match.id} className="flex items-center justify-between gap-2 text-xs">
-            <span className="truncate">{match.metadata.title ?? match.id}</span>
+            <span className="truncate">{cleanLatex(match.metadata.title) || match.id}</span>
             <Badge variant="outline" className="shrink-0">
               {Math.round(match.similarity * 100)}%
             </Badge>

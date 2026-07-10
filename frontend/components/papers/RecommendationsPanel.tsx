@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecommendations } from "@/hooks/useRecommendations";
+import { cleanLatex } from "@/lib/latex";
 
 interface RecommendationsPanelProps {
   paperId: string;
@@ -42,9 +43,9 @@ export function RecommendationsPanel({ paperId }: RecommendationsPanelProps) {
               href={`/papers/${encodeURIComponent(paper.id)}`}
               className="text-sm font-medium hover:underline"
             >
-              {paper.title}
+              {cleanLatex(paper.title)}
             </Link>
-            <p className="line-clamp-2 text-xs text-muted-foreground">{paper.abstract}</p>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{cleanLatex(paper.abstract)}</p>
           </div>
           <Badge variant="outline" className="shrink-0">
             {Math.round(similarity * 100)}%

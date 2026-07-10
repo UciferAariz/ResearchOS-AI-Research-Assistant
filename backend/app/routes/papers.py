@@ -4,13 +4,14 @@ import uuid
 from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
 from sse_starlette.sse import EventSourceResponse
 
 from app.config.dependencies import (
     ArxivClientDep,
     EmbeddingServiceDep,
     LLMProviderDep,
+    RAGPipelineDep,
     SummaryCacheDep,
     UploadStoreDep,
     VectorStoreDep,
@@ -18,10 +19,10 @@ from app.config.dependencies import (
 from app.config.settings import get_settings
 from app.models.paper import Paper
 from app.models.summary import PaperSummary
-from app.rag.indexing import index_paper_text
+from app.rag.indexing import index_paper_pages, index_paper_text
 from app.services.llm.interfaces import LLMProvider
 from app.services.llm.prompts import build_summary_messages
-from app.services.pdf_service import PdfExtractionError, extract_text
+from app.services.pdf_service import PdfExtractionError, extract_pages
 from app.services.upload_store import UPLOAD_ID_PREFIX
 from app.utils.exceptions import ExternalAPIError, LLMError
 
@@ -69,7 +70,12 @@ async def _stream_summary_events(paper: Paper, llm_provider: LLMProvider) -> Asy
 
 
 @router.get("/api/papers/{paper_id}", response_model=Paper)
-async def get_paper(paper_id: str, arxiv_client: ArxivClientDep) -> Paper:
+async def get_paper(
+    paper_id: str,
+    background_tasks: BackgroundTasks,
+    arxiv_client: ArxivClientDep,
+    pipeline: RAGPipelineDep,
+) -> Paper:
     paper = await arxiv_client.get_by_id(paper_id)
     if paper is None:
         raise HTTPException(
@@ -80,6 +86,11 @@ async def get_paper(paper_id: str, arxiv_client: ArxivClientDep) -> Paper:
                 "retryable": False,
             },
         )
+    # Warm the full-text index the moment the paper's page is opened, so by
+    # the time the user asks their first question in chat it's usually
+    # already indexed (or well underway) rather than starting from scratch.
+    # Fires after this response is sent — doesn't add to page-load latency.
+    background_tasks.add_task(pipeline.prefetch, paper.id)
     return paper
 
 
@@ -171,13 +182,14 @@ async def upload_paper(
         )
 
     try:
-        text = extract_text(pdf_bytes)
+        pages = extract_pages(pdf_bytes)
     except PdfExtractionError as exc:
         raise HTTPException(
             status_code=422,
             detail={"error": "pdf_extraction_error", "detail": str(exc), "retryable": False},
         ) from exc
 
+    text = "\n\n".join(p for p in pages if p.strip())
     now = datetime.now(timezone.utc)
     paper = Paper(
         id=f"{UPLOAD_ID_PREFIX}{uuid.uuid4().hex[:12]}",
@@ -191,9 +203,21 @@ async def upload_paper(
     )
     upload_store.add(paper)
 
-    indexing_text = text if text.strip() else paper.abstract
-    await index_paper_text(
-        vector_store, embedding_service, settings.arxiv_collection_name, paper, indexing_text
-    )
+    if text.strip():
+        await index_paper_pages(
+            vector_store, embedding_service, settings.arxiv_collection_name, paper, pages
+        )
+    else:
+        # No extractable text at all (scanned/image-only PDF) — index the
+        # derived-abstract placeholder instead. Not page-scoped, since there's
+        # no real page content to attribute it to.
+        await index_paper_text(
+            vector_store,
+            embedding_service,
+            settings.arxiv_collection_name,
+            paper,
+            paper.abstract,
+            full_text=False,
+        )
 
     return paper

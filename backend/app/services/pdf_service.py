@@ -15,12 +15,15 @@ class PdfExtractionError(Exception):
     """Raised when PDF bytes can't be parsed into text (encrypted, corrupt, or scanned/image-only)."""
 
 
-def extract_text(pdf_bytes: bytes) -> str:
-    """Extract and concatenate per-page text from a PDF's raw bytes.
+def extract_pages(pdf_bytes: bytes) -> list[str]:
+    """Extract per-page text from a PDF's raw bytes, one entry per page.
 
-    Scanned/image-only PDFs yield empty per-page text (pypdf does no OCR) —
-    callers should treat an empty/whitespace-only result as "no extractable text"
-    rather than a hard failure.
+    The list is index-aligned to the document's pages: element `i` is page
+    `i + 1`, and unreadable/blank pages are kept as empty strings so page
+    numbers stay meaningful (page-scoped retrieval and "what's on page 4?"
+    answers rely on this alignment). Scanned/image-only PDFs yield all-empty
+    entries (pypdf does no OCR) — callers should treat "no page has text" as
+    "no extractable text" rather than a hard failure.
     """
     try:
         reader = PdfReader(io.BytesIO(pdf_bytes))
@@ -36,7 +39,8 @@ def extract_text(pdf_bytes: bytes) -> str:
             pages.append(page.extract_text() or "")
         except Exception as exc:  # pypdf can raise a variety of parser-internal errors per page
             logger.warning("Skipping unreadable PDF page: %s", exc)
-    return "\n\n".join(p for p in pages if p.strip())
+            pages.append("")
+    return pages
 
 
 class PdfDownloader:

@@ -21,6 +21,7 @@ class Citation(BaseModel):
     title: str
     snippet: str
     similarity: float
+    page: int | None = None
 
 
 class ChatResponse(BaseModel):

@@ -9,6 +9,7 @@ export interface Citation {
   title: string;
   snippet: string;
   similarity: number;
+  page?: number | null;
 }
 
 export interface ChatRequest {

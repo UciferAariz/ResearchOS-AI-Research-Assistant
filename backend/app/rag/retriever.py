@@ -16,8 +16,27 @@ class Retriever:
         self._collection = collection
 
     async def retrieve(
-        self, query: str, top_k: int, paper_id: str | None = None
+        self, query: str, top_k: int, paper_id: str | None = None, page: int | None = None
     ) -> list[VectorMatch]:
+        """`page`, when given, scopes retrieval to chunks tagged with that PDF
+        page number (see `index_paper_pages`) — used for "what's on page N?"
+        questions where similarity search alone might miss the right chunk.
+        Chroma requires an explicit `$and` to combine more than one top-level
+        filter key, so build that only when both `paper_id` and `page` are set.
+        """
         [embedding] = await self._embedding_service.embed_batch([query])
-        where = {"paper_id": paper_id} if paper_id else None
+        conditions: list[dict[str, str]] = []
+        if paper_id:
+            conditions.append({"paper_id": paper_id})
+        if page is not None:
+            conditions.append({"page": str(page)})
+
+        where: dict[str, object] | None
+        if not conditions:
+            where = None
+        elif len(conditions) == 1:
+            where = conditions[0]
+        else:
+            where = {"$and": conditions}
+
         return await self._vector_store.query(self._collection, embedding, top_k=top_k, where=where)

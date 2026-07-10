@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import type { Citation } from "@/types/chat";
+import { cleanLatex } from "@/lib/latex";
 
 interface CitationListProps {
   citations: Citation[];
@@ -16,9 +17,10 @@ export function CitationList({ citations }: CitationListProps) {
           <Badge
             variant="outline"
             className="max-w-[16rem] cursor-pointer truncate border-border/60 bg-background/60 hover:border-brand/50 hover:bg-accent"
-            title={citation.snippet}
+            title={cleanLatex(citation.snippet)}
           >
-            <span className="text-brand">[{citation.index}]</span> {citation.title}
+            <span className="text-brand">[{citation.index}]</span> {cleanLatex(citation.title)}
+            {citation.page ? <span className="text-muted-foreground"> · p.{citation.page}</span> : null}
           </Badge>
         </Link>
       ))}
