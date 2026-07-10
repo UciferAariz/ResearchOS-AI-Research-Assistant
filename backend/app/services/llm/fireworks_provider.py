@@ -101,7 +101,10 @@ class FireworksLLMProvider:
                         if data_str == "[DONE]":
                             break
                         chunk = json.loads(data_str)
-                        delta = chunk["choices"][0]["delta"].get("content")
+                        choices = chunk.get("choices") or []
+                        if not choices:
+                            continue
+                        delta = choices[0].get("delta", {}).get("content")
                         if delta:
                             yield delta
         except httpx.HTTPStatusError as exc:
