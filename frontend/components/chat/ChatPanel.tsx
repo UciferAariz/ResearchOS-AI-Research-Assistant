@@ -10,6 +10,7 @@ import { useChatStream } from "@/hooks/useChatStream";
 import { useSessionStorageState } from "@/hooks/useSessionStorageState";
 import { recordActivity } from "@/lib/activity";
 import type { ChatTurn, Citation } from "@/types/chat";
+import { ChatMarkdown } from "./ChatMarkdown";
 import { CitationList } from "./CitationList";
 
 interface ChatPanelProps {
@@ -38,14 +39,17 @@ function Avatar({ role }: { role: "user" | "assistant" }) {
 
 function Bubble({
   role,
-  children,
+  content,
   citations,
+  isStreaming,
 }: {
   role: "user" | "assistant";
-  children: React.ReactNode;
+  content: string;
   citations?: Citation[];
+  isStreaming?: boolean;
 }) {
   const isUser = role === "user";
+  const cleaned = cleanLatex(content);
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -54,16 +58,29 @@ function Bubble({
       className={cn("flex items-start gap-2.5", isUser && "flex-row-reverse")}
     >
       <Avatar role={role} />
-      <div className={cn("flex max-w-[85%] flex-col gap-2", isUser && "items-end")}>
+      <div className={cn("flex min-w-0 max-w-[88%] flex-col gap-2 sm:max-w-[80%]", isUser && "items-end")}>
         <div
           className={cn(
-            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+            "min-w-0 rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
             isUser
               ? "rounded-tr-sm bg-primary text-primary-foreground"
               : "rounded-tl-sm bg-card text-card-foreground ring-1 ring-foreground/10",
           )}
         >
-          <p className="whitespace-pre-wrap">{children}</p>
+          {isUser ? (
+            <p className="whitespace-pre-wrap break-words">{cleaned}</p>
+          ) : cleaned ? (
+            <ChatMarkdown content={cleaned} />
+          ) : isStreaming ? (
+            <span className="flex items-center gap-1 py-0.5">
+              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/70 [animation-delay:-0.3s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/70 [animation-delay:-0.15s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/70" />
+            </span>
+          ) : null}
+          {isStreaming && cleaned && (
+            <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-muted-foreground/70" />
+          )}
         </div>
         {citations && citations.length > 0 && <CitationList citations={citations} />}
       </div>
@@ -129,16 +146,11 @@ export function ChatPanel({ paperId, placeholder = "Ask a question…" }: ChatPa
 
         <AnimatePresence initial={false}>
           {messages.map((message, i) => (
-            <Bubble key={i} role={message.role} citations={message.citations}>
-              {cleanLatex(message.content)}
-            </Bubble>
+            <Bubble key={i} role={message.role} content={message.content} citations={message.citations} />
           ))}
 
           {isStreaming && (
-            <Bubble key="streaming" role="assistant" citations={citations}>
-              {cleanLatex(answer)}
-              <span className="ml-0.5 inline-block h-3 w-1.5 animate-pulse bg-muted-foreground align-middle" />
-            </Bubble>
+            <Bubble key="streaming" role="assistant" content={answer} citations={citations} isStreaming />
           )}
         </AnimatePresence>
 
