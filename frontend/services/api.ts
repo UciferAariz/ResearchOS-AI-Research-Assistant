@@ -115,7 +115,14 @@ export async function uploadPaper(file: File, signal?: AbortSignal): Promise<Pap
   const response = await fetch(url, { method: "POST", body: formData, signal });
   if (!response.ok) return handleErrorResponse(response);
 
-  return paperSchema.parse(await response.json());
+  const raw = await response.json();
+  try {
+    return paperSchema.parse(raw);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Upload response did not match expected schema:", err, raw);
+    throw err;
+  }
 }
 
 export function getPaperSummaryStreamUrl(paperId: string): string {

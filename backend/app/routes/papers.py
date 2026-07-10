@@ -24,7 +24,7 @@ from app.services.llm.interfaces import LLMProvider
 from app.services.llm.prompts import build_summary_messages
 from app.services.pdf_service import PdfExtractionError, extract_pages
 from app.services.upload_store import UPLOAD_ID_PREFIX
-from app.utils.exceptions import ExternalAPIError, LLMError
+from app.utils.exceptions import EmbeddingError, ExternalAPIError, LLMError, RAGRetrievalError
 
 logger = logging.getLogger(__name__)
 
@@ -162,9 +162,12 @@ async def upload_paper(
     /api/chat can address it just like an arXiv paper."""
     settings = get_settings()
 
-    if file.content_type not in ("application/pdf", "application/octet-stream") and not (
-        file.filename or ""
-    ).lower().endswith(".pdf"):
+    content_type = file.content_type or ""
+    filename = file.filename or ""
+    if not (
+        content_type.startswith(("application/pdf", "application/octet-stream"))
+        or filename.lower().endswith(".pdf")
+    ):
         raise HTTPException(
             status_code=400,
             detail={"error": "invalid_file_type", "detail": "Only PDF files are supported", "retryable": False},
@@ -203,21 +206,27 @@ async def upload_paper(
     )
     upload_store.add(paper)
 
-    if text.strip():
-        await index_paper_pages(
-            vector_store, embedding_service, settings.arxiv_collection_name, paper, pages
-        )
-    else:
-        # No extractable text at all (scanned/image-only PDF) — index the
-        # derived-abstract placeholder instead. Not page-scoped, since there's
-        # no real page content to attribute it to.
-        await index_paper_text(
-            vector_store,
-            embedding_service,
-            settings.arxiv_collection_name,
-            paper,
-            paper.abstract,
-            full_text=False,
-        )
+    try:
+        if text.strip():
+            await index_paper_pages(
+                vector_store, embedding_service, settings.arxiv_collection_name, paper, pages
+            )
+        else:
+            # No extractable text at all (scanned/image-only PDF) — index the
+            # derived-abstract placeholder instead. Not page-scoped, since there's
+            # no real page content to attribute it to.
+            await index_paper_text(
+                vector_store,
+                embedding_service,
+                settings.arxiv_collection_name,
+                paper,
+                paper.abstract,
+                full_text=False,
+            )
+    except (EmbeddingError, RAGRetrievalError) as exc:
+        # Uploading should not fail just because indexing failed (e.g. a
+        # transient embedding or vector-store hiccup). The paper is already
+        # registered, so return it and log the indexing failure for ops.
+        logger.warning("PDF upload succeeded but indexing failed for %s: %s", paper.id, exc)
 
     return paper
