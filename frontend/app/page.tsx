@@ -5,7 +5,6 @@ import { MessageSquare, Scale, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { GpuBenchmarkPanel } from "@/components/diagnostics/GpuBenchmarkPanel";
 import { UploadPanel } from "@/components/papers/UploadPanel";
 import { SearchBar } from "@/components/search/SearchBar";
 import { getActivity, type ActivityItem } from "@/lib/activity";
@@ -33,9 +32,16 @@ function greeting(): string {
 export default function Home() {
   const router = useRouter();
   const [recents, setRecents] = useState<ActivityItem[]>([]);
+  // Rendered only after mount — a server/client date string differs by locale
+  // (ICU adds a comma), which would otherwise trip a hydration mismatch.
+  const [today, setToday] = useState("");
 
   useEffect(() => {
     setRecents(getActivity().slice(0, 4));
+    const d = new Date();
+    const weekday = d.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
+    const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+    setToday(`${weekday} · ${String(d.getDate()).padStart(2, "0")} ${month}`);
   }, []);
 
   function goSearch(query: string) {
@@ -49,9 +55,7 @@ export default function Home() {
 
       <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-10 px-8 pb-16 pt-10">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[11px] tracking-[1.4px] text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short" }).toUpperCase()}
-          </span>
+          <span className="font-mono text-[11px] tracking-[1.4px] text-muted-foreground">{today}</span>
         </div>
 
         <motion.div
@@ -167,7 +171,6 @@ export default function Home() {
 
         <div id="upload" className="flex flex-col items-center gap-8 pt-4">
           <UploadPanel />
-          <GpuBenchmarkPanel />
         </div>
       </div>
     </main>

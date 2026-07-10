@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { RecommendationsPanel } from "@/components/papers/RecommendationsPanel";
 import { SourceBadge } from "@/components/papers/SourceBadge";
@@ -14,6 +15,7 @@ export default function PaperDetailsPage() {
   const router = useRouter();
   const paperId = decodeURIComponent(params.id);
   const { paper, isLoading, error } = usePaper(paperId);
+  const [copied, setCopied] = useState(false);
 
   return (
     <div className="min-h-full w-full overflow-y-auto">
@@ -45,14 +47,13 @@ export default function PaperDetailsPage() {
             <div>
               <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
                 <SourceBadge source={paper.source} />
-                {paper.source !== "upload" && (
+                {paper.source === "arxiv" && (
                   <span className="font-mono text-xs text-muted-foreground">
-                    {new Date(paper.published).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    doi:10.48550/arXiv.{paper.id}
                   </span>
+                )}
+                {paper.source === "pubmed" && (
+                  <span className="font-mono text-xs text-muted-foreground">PMID:{paper.id}</span>
                 )}
               </div>
               <h1 className="mb-3.5 font-serif text-[34px] font-medium leading-[1.18] tracking-[-0.4px]">
@@ -67,7 +68,9 @@ export default function PaperDetailsPage() {
                   <div className="flex size-[22px] items-center justify-center rounded-[6px] bg-gradient-to-br from-brand to-brand-secondary">
                     <div className="size-2 rounded-[2px] border-[1.5px] border-background" />
                   </div>
-                  <span className="font-mono text-[10.5px] uppercase tracking-[1.2px] text-brand">AI summary</span>
+                  <span className="font-mono text-[10.5px] uppercase tracking-[1.2px] text-brand">
+                    AI summary · key points
+                  </span>
                 </div>
                 <SummaryPanel paperId={paper.id} />
               </div>
@@ -75,20 +78,41 @@ export default function PaperDetailsPage() {
               <h2 className="mb-3.5 font-serif text-[21px] font-medium">Abstract</h2>
               <p className="mb-6 font-serif text-[15.5px] leading-[1.75] text-[#cfc8ba]">{cleanLatex(paper.abstract)}</p>
 
-              <div className="flex flex-wrap gap-2.5">
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const year = paper.published ? new Date(paper.published).getFullYear() : "n.d.";
+                    const citation = `${paper.authors.join(", ")} (${year}). ${cleanLatex(paper.title)}.`;
+                    navigator.clipboard.writeText(citation).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    });
+                  }}
+                  className="flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-brand to-[#3a63d9] px-4 py-2.5 text-[13px] font-semibold text-white transition-[filter] hover:brightness-110"
+                >
+                  {copied ? "Copied ✓" : "Cite"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("ask")?.scrollIntoView({ behavior: "smooth" })}
+                  className="flex items-center gap-2 rounded-[10px] border border-border/60 px-4 py-2.5 text-[13px] font-medium text-foreground transition-colors hover:border-brand/50"
+                >
+                  Ask about this paper
+                </button>
                 {paper.pdf_url && (
                   <a
                     href={paper.pdf_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-brand to-[#3a63d9] px-4 py-2.5 text-[13px] font-semibold text-white"
+                    className="flex items-center gap-2 rounded-[10px] border border-border/60 px-4 py-2.5 text-[13px] font-medium text-foreground transition-colors hover:border-brand/50"
                   >
                     View PDF ↗
                   </a>
                 )}
               </div>
 
-              <div className="mt-10 space-y-3 border-t border-border/60 pt-6">
+              <div id="ask" className="mt-10 space-y-3 border-t border-border/60 pt-6">
                 <h2 className="font-serif text-[19px] font-medium">Ask about this paper</h2>
                 <ChatPanel paperId={paper.id} placeholder="Ask a question about this paper…" />
               </div>

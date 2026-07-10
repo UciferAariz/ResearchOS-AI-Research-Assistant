@@ -98,6 +98,14 @@ export function cleanLatex(input?: string | null): string {
   // Sizing/spacing no-ops that only matter for real typesetting.
   s = s.replace(/\\(?:left|right|displaystyle|textstyle|scriptstyle|nolimits|limits)\b\s*/g, "");
 
+  // Old-style font switches (`\rm`, `\bf`, `\it`, …) — common inside subscripts
+  // like `s_{\rm NN}`. Drop the command (and its trailing space) but keep the
+  // text, so `s_{\rm NN}` becomes a clean `s NN` rather than `srm NN`.
+  s = s.replace(
+    /\\(?:rm|bf|it|sf|tt|sc|em|cal|sl|normalfont|upshape|itshape|slshape|scshape|bfseries|mdseries|rmfamily|sffamily|ttfamily)\b\s*/g,
+    "",
+  );
+
   // \frac{a}{b} → "a/b" (parenthesised when either side is more than one glyph).
   s = s.replace(/\\(?:d|t)?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (_m, a, b) => {
     const wrap = (x: string) => (x.length > 1 ? `(${x})` : x);
