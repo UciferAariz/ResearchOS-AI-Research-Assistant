@@ -23,3 +23,6 @@ frontend/next-env.d.ts
 # OS
 .DS_Store
 Thumbs.db
+
+# Deploy logs
+frontend/deploy_out.txt

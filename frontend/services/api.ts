@@ -4,10 +4,22 @@ import type { ComparisonRequest, ComparisonResult } from "@/types/comparison";
 import type { Paper, SearchResponse } from "@/types/paper";
 import type { RecommendationResponse } from "@/types/recommendation";
 import type { BenchmarkResult, VectorMatch } from "@/types/vector";
+import {
+  DEMO_MODE,
+  demoBenchmark,
+  demoCompare,
+  demoGetPaper,
+  demoRecommendations,
+  demoSearch,
+  demoSimilar,
+  demoUpload,
+} from "@/services/demo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-if (!API_BASE_URL) {
+// In demo mode every call is served from canned data (services/demo.ts), so a
+// live backend URL is unnecessary — only require it when actually calling out.
+if (!API_BASE_URL && !DEMO_MODE) {
   throw new Error("NEXT_PUBLIC_API_URL is not set — check your .env.local");
 }
 
@@ -57,6 +69,7 @@ export async function searchPapers(
   maxResults = 10,
   signal?: AbortSignal,
 ): Promise<SearchResponse> {
+  if (DEMO_MODE) return demoSearch(query, maxResults);
   const url = new URL("/api/search", API_BASE_URL);
   url.searchParams.set("q", query);
   url.searchParams.set("max_results", String(maxResults));
@@ -80,6 +93,7 @@ export async function getSimilarPapers(
   topK = 5,
   signal?: AbortSignal,
 ): Promise<VectorMatch[]> {
+  if (DEMO_MODE) return demoSimilar(paperId, topK);
   const url = new URL(`/api/papers/${encodeURIComponent(paperId)}/similar`, API_BASE_URL);
   url.searchParams.set("top_k", String(topK));
 
@@ -99,6 +113,7 @@ const benchmarkResultSchema = z.object({
 });
 
 export async function getPaper(paperId: string, signal?: AbortSignal): Promise<Paper> {
+  if (DEMO_MODE) return demoGetPaper(paperId);
   const url = new URL(`/api/papers/${encodeURIComponent(paperId)}`, API_BASE_URL);
 
   const response = await fetch(url, { signal });
@@ -108,6 +123,7 @@ export async function getPaper(paperId: string, signal?: AbortSignal): Promise<P
 }
 
 export async function uploadPaper(file: File, signal?: AbortSignal): Promise<Paper> {
+  if (DEMO_MODE) return demoUpload(file);
   const url = new URL("/api/papers/upload", API_BASE_URL);
   const formData = new FormData();
   formData.append("file", file);
@@ -167,6 +183,7 @@ export async function comparePapers(
   paperIds: string[],
   signal?: AbortSignal,
 ): Promise<ComparisonResult> {
+  if (DEMO_MODE) return demoCompare(paperIds);
   const url = new URL("/api/compare", API_BASE_URL);
   const payload: ComparisonRequest = { paper_ids: paperIds };
 
@@ -196,6 +213,7 @@ export async function getRecommendations(
   maxResults = 10,
   signal?: AbortSignal,
 ): Promise<RecommendationResponse> {
+  if (DEMO_MODE) return demoRecommendations(paperIds, maxResults);
   const url = new URL("/api/recommendations", API_BASE_URL);
 
   const response = await fetch(url, {
@@ -213,6 +231,7 @@ export async function runEmbeddingBenchmark(
   numTexts = 50,
   signal?: AbortSignal,
 ): Promise<BenchmarkResult> {
+  if (DEMO_MODE) return demoBenchmark(numTexts);
   const url = new URL("/api/embeddings/benchmark", API_BASE_URL);
   url.searchParams.set("num_texts", String(numTexts));
 

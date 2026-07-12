@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { DEMO_MODE, demoFetch } from "@/services/demo";
 
 interface UseStreamingCompletionState {
   text: string;
@@ -29,7 +30,10 @@ export function useStreamingCompletion() {
     setState({ text: "", isStreaming: true, error: null });
 
     try {
-      const response = await fetch(url, { ...init, signal: controller.signal });
+      const requestInit = { ...init, signal: controller.signal };
+      const response = DEMO_MODE
+        ? await demoFetch(url, requestInit)
+        : await fetch(url, requestInit);
       if (!response.ok || !response.body) {
         throw new Error(`Request failed with status ${response.status}`);
       }

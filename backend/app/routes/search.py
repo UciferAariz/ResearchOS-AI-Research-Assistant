@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 from app.config.dependencies import ArxivClientDep, EmbeddingServiceDep, SearchCacheDep, VectorStoreDep
 from app.config.settings import get_settings
@@ -49,6 +49,7 @@ async def _index_papers(
 
 @router.get("/api/search", response_model=SearchResponse)
 async def search_papers(
+    background_tasks: BackgroundTasks,
     arxiv_client: ArxivClientDep,
     cache: SearchCacheDep,
     embedding_service: EmbeddingServiceDep,
@@ -69,7 +70,7 @@ async def search_papers(
             detail={"error": "external_api_error", "detail": exc.detail, "retryable": exc.retryable},
         ) from exc
 
-    await _index_papers(papers, embedding_service, vector_store)
+    background_tasks.add_task(_index_papers, papers, embedding_service, vector_store)
 
     result = SearchResponse(query=q, count=len(papers), papers=papers)
     cache.set(cache_key, result)

@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { buildChatStreamRequest } from "@/services/api";
+import { DEMO_MODE, demoFetch } from "@/services/demo";
 import type { ChatRequest, Citation } from "@/types/chat";
 
 interface UseChatStreamState {
@@ -48,7 +49,10 @@ export function useChatStream() {
 
     try {
       const { url, init } = buildChatStreamRequest(payload);
-      const response = await fetch(url, { ...init, signal: controller.signal });
+      const requestInit = { ...init, signal: controller.signal };
+      const response = DEMO_MODE
+        ? await demoFetch(url, requestInit)
+        : await fetch(url, requestInit);
       if (!response.ok || !response.body) {
         throw new Error(`Request failed with status ${response.status}`);
       }

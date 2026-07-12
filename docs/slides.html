@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchOS — Track 3 Slide Deck</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --ink:#eef2ff; --muted:#9fb0d0;
+    --amd:#ed1c24; --accent:#3ba7ff; --line:#26314f; --good:#38d39f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#05070f;color:var(--ink);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .hint{max-width:1040px;margin:24px auto 8px;padding:12px 18px;border:1px dashed var(--line);
+    border-radius:10px;color:var(--muted);font-size:14px}
+  .hint b{color:var(--ink)}
+  .slide{width:1040px;min-height:585px;margin:22px auto;background:
+    radial-gradient(1200px 500px at 80% -10%, #16233f 0%, var(--bg) 55%);
+    border:1px solid var(--line);border-radius:16px;padding:52px 60px;position:relative;overflow:hidden}
+  .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  h1{font-size:52px;line-height:1.05;margin:14px 0 10px}
+  h2{font-size:34px;margin:6px 0 22px}
+  p,li{font-size:20px;line-height:1.5;color:#dbe4fb}
+  .muted{color:var(--muted)}
+  .amd{color:var(--amd);font-weight:800}
+  ul{margin:8px 0;padding-left:22px} li{margin:10px 0}
+  .row{display:flex;gap:22px}.col{flex:1}
+  .badge{display:inline-block;background:var(--panel);border:1px solid var(--line);
+    border-radius:999px;padding:6px 14px;font-size:14px;color:var(--muted);margin-right:8px}
+  .foot{position:absolute;bottom:20px;left:60px;right:60px;display:flex;justify-content:space-between;
+    font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;font-size:18px}
+  th{background:var(--panel);color:var(--accent)}
+  td.spd{color:var(--good);font-weight:700}
+  .big{font-size:40px;font-weight:800;color:var(--good)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:8px 0}
+  .arch{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.45;
+    white-space:pre;background:#070c18;border:1px solid var(--line);border-radius:12px;padding:18px 20px;color:#cfe0ff;overflow:auto}
+  .notes{max-width:1040px;margin:0 auto 26px;padding:16px 20px;background:#0d1424;border:1px solid var(--line);
+    border-left:4px solid var(--amd);border-radius:0 10px 10px 0;color:#c7d3ef;font-size:15px;line-height:1.55}
+  .notes b{color:var(--accent)}
+  @media print{
+    @page{size:1040px 620px;margin:0}
+    body{background:#fff}
+    .hint,.notes{display:none!important}
+    .slide{margin:0;border:none;border-radius:0;page-break-after:always;width:1040px;min-height:620px}
+  }
+</style>
+</head>
+<body>
+
+<div class="hint">
+  <b>How to use this file.</b> On screen you'll see each slide followed by its <b>speaker script</b> (red bar) — read these while recording your demo video.
+  To create the <b>submission PDF</b>: press <b>Ctrl/Cmd&nbsp;+&nbsp;P</b> → Destination <b>Save as PDF</b> → Layout <b>Landscape</b> → Margins <b>None</b> → enable <b>Background graphics</b>. The speaker notes and this banner are automatically hidden in the PDF.
+</div>
+
+<!-- 1 -->
+<section class="slide">
+  <div class="kicker">AMD Developer Hackathon · Track 3 — Unicorn / Open Innovation</div>
+  <h1>ResearchOS</h1>
+  <h2 class="muted">An AI research assistant powered by <span class="amd">AMD GPUs</span></h2>
+  <p>Semantic search · citation-grounded chat · paper comparison · PDF Q&amp;A · recommendations —
+     over arXiv &amp; PubMed, with all embedding inference accelerated on AMD ROCm.</p>
+  <div style="margin-top:26px">
+    <span class="badge">Live: frontend-ucifer-pros.vercel.app</span>
+    <span class="badge">GitHub: UciferAariz/ResearchOS-AI-Research-Assistant</span>
+    <span class="badge">Team 2280</span>
+  </div>
+  <div class="foot"><span>ResearchOS</span><span>Track 3 · Open Innovation</span></div>
+</section>
+<div class="notes"><b>Say:</b> "Hi — this is ResearchOS, my Track 3 submission. It's an AI research assistant that helps you find, compare, and question scientific papers by <i>meaning</i> — and every embedding it computes runs on an AMD Radeon GPU through ROCm. It's live on the web and open-source; let me show you what it does and how AMD compute makes it work." <b>(~15s)</b></div>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>Researchers can't keep up — and keyword search doesn't help</h2>
+  <ul>
+    <li><b>Volume:</b> thousands of papers a week; nobody can read them all.</li>
+    <li><b>Discovery gap:</b> keyword search misses conceptually-related work that uses different terminology.</li>
+    <li><b>Reading cost:</b> deciding whether a paper is relevant still means opening and skimming the full PDF.</li>
+    <li><b>No grounding:</b> generic chatbots hallucinate about papers instead of citing them.</li>
+  </ul>
+  <div class="foot"><span>ResearchOS</span><span>2 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "The core problem is volume and discovery. Researchers face thousands of new papers, and keyword search misses work that's conceptually related but phrased differently. Even when you find candidates, you still have to open every PDF to judge relevance — and general chatbots just hallucinate instead of citing sources." <b>(~15s)</b></div>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">The solution</div>
+  <h2>A queryable, citation-aware knowledge base over the literature</h2>
+  <div class="row">
+    <div class="col">
+      <div class="card"><b>🔍 Semantic search</b><br><span class="muted">Find by meaning; results auto-embedded on GPU + indexed.</span></div>
+      <div class="card"><b>💬 Citation-grounded chat</b><br><span class="muted">RAG over full PDF text, answers with inline citations.</span></div>
+      <div class="card"><b>⚖️ Paper comparison</b><br><span class="muted">Contrast 2–5 papers' methods &amp; results.</span></div>
+    </div>
+    <div class="col">
+      <div class="card"><b>📄 PDF upload Q&amp;A</b><br><span class="muted">Drop your own PDF; chat it like any indexed paper.</span></div>
+      <div class="card"><b>🎯 Recommendations</b><br><span class="muted">Embedding centroid of papers you like → ranked candidates.</span></div>
+      <div class="card"><b>🧭 Similar papers</b><br><span class="muted">Pure vector nearest-neighbours surface hidden links.</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>ResearchOS</span><span>3 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "ResearchOS turns the literature into a queryable, citation-aware knowledge base. You search by meaning, chat with answers grounded in the actual PDF text and cited, compare several papers side by side, upload your own PDFs to question them, and get recommendations built from a semantic centroid of papers you already care about." <b>(~18s)</b></div>
+
+<!-- 4 - AMD anchor -->
+<section class="slide">
+  <div class="kicker amd" style="color:var(--amd)">■ AMD compute — the engine</div>
+  <h2>Every embedding runs on an AMD RDNA3 GPU via ROCm</h2>
+  <div class="row">
+    <div class="col">
+      <p><span class="badge">GPU: gfx1100 (RDNA3 / Navi 31)</span><br>
+         <span class="badge">Host: AMD EPYC 9334 32-core</span><br>
+         <span class="badge">ROCm 7.2.1</span> <span class="badge">PyTorch 2.9.1 (ROCm)</span></p>
+      <p class="muted">sentence-transformers <b>all-MiniLM-L6-v2</b>, batched on-GPU. The interactive, latency-sensitive path — search, similarity, RAG retrieval, recommendations — is all AMD-accelerated.</p>
+    </div>
+    <div class="col">
+      <table>
+        <tr><th>Batch</th><th>GPU t/s</th><th>CPU t/s</th><th>Speedup</th></tr>
+        <tr><td>10</td><td>555</td><td>6.5</td><td class="spd">~85×</td></tr>
+        <tr><td>50</td><td>1,664</td><td>6.8</td><td class="spd">~246×</td></tr>
+        <tr><td>200</td><td>2,750</td><td>6.8</td><td class="spd">~404×</td></tr>
+        <tr><td>500</td><td>3,130</td><td>6.8</td><td class="spd">~458×</td></tr>
+      </table>
+      <p class="muted" style="font-size:15px">Speedup <b>grows</b> with batch size — real parallelism scaling, not a fixed offset.</p>
+    </div>
+  </div>
+  <div class="foot"><span>ResearchOS · docs/gpu_evidence.md</span><span>4 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "Here's the AMD engine. Every embedding is computed on an AMD RDNA3 GPU — a gfx1100, on an EPYC host, running ROCm 7.2.1 with a ROCm build of PyTorch. I benchmarked it against CPU: at small batches it's about 85× faster, and it scales up to 458× at batch 500. The fact that the speedup <i>grows</i> with batch size is the tell — that's genuine GPU parallelism, not a constant offset. Full evidence is in docs/gpu_evidence.md in the repo." <b>(~22s — this is your key slide, don't rush it)</b></div>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">Architecture</div>
+  <h2>How it fits together</h2>
+  <div class="arch">  Next.js frontend (Vercel)              FastAPI backend (AMD ROCm notebook)
+  ──────────────────────────             ──────────────────────────────────────
+   search / chat / compare   ──HTTPS──▶   ┌───────────────────────────────────┐
+   discover / upload / recs   Cloudflare  │  sentence-transformers            │
+                               Tunnel     │  all-MiniLM-L6-v2  ──▶  AMD GPU    │
+                                          │                        (ROCm/HIP)  │
+                                          ├───────────────────────────────────┤
+                                          │  ChromaDB   (persistent vectors)   │
+                                          │  arXiv / PubMed clients            │
+                                          │  Fireworks AI  (LLM: chat/compare) │
+                                          └───────────────────────────────────┘</div>
+  <p class="muted">GPU-bound embedding vs. LLM inference are cleanly separated; services wired via FastAPI dependency injection. ChromaDB persists vectors on disk across restarts.</p>
+  <div class="foot"><span>ResearchOS</span><span>5 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "Architecturally, the Next.js frontend on Vercel talks over a Cloudflare tunnel to a FastAPI backend on the AMD notebook. Inside the backend, sentence-transformers runs the embeddings on the AMD GPU, ChromaDB persists the vectors on disk, and I pull papers from arXiv and PubMed. LLM inference for chat and comparison is served separately by Fireworks — so the latency-critical embedding path stays on AMD." <b>(~18s)</b></div>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Demo</div>
+  <h2>Live walkthrough</h2>
+  <ul>
+    <li><b>Search</b> "transformer attention" → semantically-ranked papers, auto-indexed.</li>
+    <li><b>Chat</b> a question → streamed answer with inline <span class="accent" style="color:var(--accent)">[citations]</span> from the PDF text.</li>
+    <li><b>Compare</b> two arXiv IDs → side-by-side methods &amp; contributions.</li>
+    <li><b>Similar / Recommend</b> → nearest-neighbour papers from the vector space.</li>
+  </ul>
+  <p class="muted">Live at <b>frontend-ucifer-pros.vercel.app</b> — replace this slide with 2–3 screenshots for the PDF.</p>
+  <div class="foot"><span>ResearchOS</span><span>6 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "Let me show it live. I'll search a topic and you'll see papers ranked by meaning and auto-indexed. Then I'll ask a question in chat — notice the answer streams in with inline citations pulled from the actual PDF. Then I compare two papers, and finally pull up similar and recommended work from the vector space." <b>Screen-record this section against the live site.</b> <b>(~30–40s of footage)</b></div>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">Engineering</div>
+  <h2>Tech stack &amp; what's under the hood</h2>
+  <div class="row">
+    <div class="col">
+      <p><b>Backend</b></p>
+      <ul>
+        <li>Python · FastAPI (DI-layered)</li>
+        <li>PyTorch <b>ROCm</b> · sentence-transformers</li>
+        <li>ChromaDB (persistent vectors)</li>
+        <li>Fireworks AI · arXiv + PubMed · pypdf</li>
+      </ul>
+    </div>
+    <div class="col">
+      <p><b>Frontend &amp; infra</b></p>
+      <ul>
+        <li>Next.js (App Router) · TypeScript · Vercel</li>
+        <li>AMD RDNA3 <b>gfx1100</b> + ROCm 7.2.1 notebook</li>
+        <li>Cloudflare Tunnel exposure</li>
+        <li>RAG over <b>full PDF text</b>, not just abstracts</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>ResearchOS</span><span>7 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "On the engineering side: a cleanly layered FastAPI backend using dependency injection, ROCm PyTorch and sentence-transformers for embeddings, ChromaDB for persistent vector storage, and Fireworks for the LLM. The frontend is Next.js on Vercel. One detail I'm proud of: the RAG chat retrieves over the full PDF text, not just abstracts, so answers are actually grounded." <b>(~18s)</b></div>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">Impact &amp; roadmap</div>
+  <h2>Why it matters — and where it goes</h2>
+  <ul>
+    <li><b>Impact:</b> turns an unmanageable paper firehose into an interactive, cited knowledge base — GPU acceleration is what makes it fast enough to be interactive.</li>
+    <li><b>Next:</b> stable named tunnel / always-on hosting · larger multi-topic corpora · more sources (bioRxiv, Semantic Scholar) · on-GPU reranking.</li>
+  </ul>
+  <div style="margin-top:20px">
+    <span class="badge">Live: frontend-ucifer-pros.vercel.app</span>
+    <span class="badge">GitHub: UciferAariz/ResearchOS-AI-Research-Assistant</span>
+  </div>
+  <p style="margin-top:22px" class="big">Thank you.</p>
+  <div class="foot"><span>ResearchOS · Track 3</span><span>8 / 8</span></div>
+</section>
+<div class="notes"><b>Say:</b> "The impact: ResearchOS turns an unmanageable stream of papers into an interactive, cited knowledge base — and AMD GPU acceleration is exactly what makes the semantic layer fast enough to feel interactive. Next I'd add always-on hosting, more sources, and on-GPU reranking. Thanks for watching — the code and live demo links are on screen." <b>(~15s)</b></div>
+
+</body>
+</html>

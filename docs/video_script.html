@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResearchOS Video Script — AMD Hackathon Track 3</title>
+    <style>
+        :root {
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #7a7a7a;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --accent: #4b7bff;
+            --accent-light: #e8f0ff;
+            --border: #e0e0e0;
+            --brand-serif: 'Georgia', serif;
+            --brand-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            --brand-mono: 'Courier New', monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f0f0f0;
+                --text-secondary: #d0d0d0;
+                --text-muted: #909090;
+                --bg-primary: #121212;
+                --bg-secondary: #1e1e1e;
+                --accent: #6b95ff;
+                --accent-light: #1a2a4a;
+                --border: #333333;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--brand-sans);
+            line-height: 1.6;
+        }
+
+        body {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: var(--brand-serif);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timing {
+            font-family: var(--brand-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: var(--brand-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .block {
+            background-color: var(--bg-secondary);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 2px;
+        }
+
+        .block-label {
+            font-family: var(--brand-mono);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .narration {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            font-style: italic;
+            margin: 1rem 0;
+        }
+
+        .narration::before {
+            content: "🎤 ";
+            margin-right: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .action {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .action strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .command-block {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: var(--brand-mono);
+            font-size: 0.9rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .command-label {
+            opacity: 0.7;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .note {
+            background-color: var(--accent-light);
+            border-left: 3px solid var(--accent);
+            padding: 0.75rem 1rem;
+            border-radius: 2px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 1rem 0;
+        }
+
+        .note strong {
+            color: var(--accent);
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            line-height: 1.8;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .setup {
+            background-color: var(--accent-light);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .setup h3 {
+            font-family: var(--brand-serif);
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .timing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .timing-table th,
+        .timing-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timing-table th {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: var(--brand-serif);
+        }
+
+        .timing-table td {
+            color: var(--text-secondary);
+        }
+
+        .timing-table .timing-col {
+            font-family: var(--brand-mono);
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        @media print {
+            body {
+                padding: 1rem;
+                max-width: 100%;
+            }
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ResearchOS Video Script</h1>
+    <p class="subtitle">AMD Developer Hackathon — Track 3 Submission (3–5 min presentation)</p>
+</header>
+
+<div class="setup">
+    <h3>✓ Pre-Production Setup (off-camera, ~5 min before recording)</h3>
+    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Run these steps so the live system is warm and responsive on camera. Do not film these.</p>
+    <ul>
+        <li><strong>Notebook Terminal 1</strong> — Start the backend and ensure GPU is detected:
+            <div class="command-block">
+cd /workspace/ResearchOS-AI-Research-Assistant
+git -c http.sslVerify=false pull origin main
+cd backend
+source /opt/venv/bin/activate
+pip install -r requirements-rocm.txt
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000</div>
+            Wait for <code>Uvicorn running on http://0.0.0.0:8000</code> and <code>Embedding model ... loaded on device=cuda</code>. <strong>Keep this terminal visible on screen — it's your GPU proof.</strong>
+        </li>
+        <li><strong>Notebook Terminal 2</strong> — Start the tunnel:
+            <div class="command-block">
+dpkg -i /workspace/cloudflared.deb
+cloudflared tunnel --url http://localhost:8000</div>
+            Copy the <code>https://SOME-WORDS.trycloudflare.com</code> URL from the banner.
+        </li>
+        <li><strong>Windows machine</strong> — Point the live site at the new tunnel:
+            <div class="command-block">
+cd C:\Users\Azra\Desktop\ResearchOS\frontend
+.\redeploy.ps1 https://SOME-WORDS.trycloudflare.com</div>
+            Opens https://frontend-ucifer-pros.vercel.app. Hard-refresh, then run one throwaway search to warm the embedding model so responses are fast on camera.
+        </li>
+        <li><strong>Pre-stage your tabs:</strong> (1) live site on Home, (2) notebook Terminal 1 showing device=cuda, (3) docs/gpu_evidence.md, (4) README.md with Architecture section scrolled into view.</li>
+    </ul>
+</div>
+
+<!-- SCENE 1 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">0:00–0:25</span>
+        <h2 class="section-title">Hook & What It Is</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "Researchers drown in papers. Keyword search misses conceptually related work. Reading every PDF end-to-end is impossible. This is <strong>ResearchOS</strong> — an AI research assistant that transforms how you find and understand scientific literature. You search papers by <em>meaning</em>, not keywords. You chat with them and get answers grounded in the actual PDF text, with inline citations. You compare methods across papers side by side. And here's what matters: every semantic operation — every embedding, every similarity search, every vector retrieval — runs on an <strong>AMD Radeon GPU through ROCm.</strong> That's where the speed comes from."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Show the live site's <strong>Home page</strong>. Slowly pan the cursor down the left sidebar so the navigation items (Discover, Assistant, Reader, Compare, History) are visible. Hold for 2 seconds.
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>Why this opening:</strong> Judges need to understand the problem (researchers drown in papers) and the solution (semantic search + RAG) in the first 25 seconds. Lead with ResearchOS, not the GPU — the GPU payoff comes next.
+    </div>
+</div>
+
+<!-- SCENE 2 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">0:25–1:05</span>
+        <h2 class="section-title">The AMD GPU Proof (Critical for Scoring)</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "Let me show the hardware. Here's the backend running on an AMD <code>gfx1100</code> — that's RDNA3, a Radeon RX 7900 XTX class — under ROCm 7.2.1. The embedding model loads on <code>device=cuda</code>, which on AMD hardware maps to the HIP backend. This is real GPU compute, not a soft claim. Here's the throughput: embedding a batch of 10 sentences runs at 555 texts per second on the GPU. A batch of 500 runs at over 3,000 per second — <strong>458 times faster than CPU.</strong> That's not a fixed offset; throughput scales with parallelism. That's why the interactive latency stays snappy even under load."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Cut to <strong>notebook Terminal 1</strong>. Point at the line <code>Embedding model ... loaded on device=cuda</code>. Hold for 3 seconds so it's legible on camera.
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Command 1: Show the AMD GPU</div>
+        <div class="command-block">
+<div class="command-label">Run in notebook shell:</div>
+rocm-smi</div>
+        <div class="action">
+            Show the output. Point at the GPU name (<code>gfx1100</code>) and the memory available. This proves the physical AMD GPU is present and detected.
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Command 2: Show the benchmark</div>
+        <div class="command-block">
+<div class="command-label">Run in notebook shell:</div>
+cat docs/gpu_evidence.md | head -50</div>
+        <div class="action">
+            Scroll to the benchmark table. Point at the "Speedup" column: 85×, 246×, 404×, 458×. Narrate: "Speedup grows with batch size — that's real parallelism, not a fixed cost."
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>Why this is critical:</strong> Track 3 judges are evaluating GPU acceleration. This scene proves the claim is real, not marketing. The <code>rocm-smi</code> output and benchmark numbers are your evidence. Spend 40 seconds here — it's the differentiator.
+    </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">1:05–1:45</span>
+        <h2 class="section-title">Semantic Search (Discover)</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "Now the product in action. In <strong>Discover</strong>, I search arXiv and PubMed by meaning. I type a query like 'attention mechanisms for long-context transformers.' The query is embedded on the AMD GPU in real time, indexed into ChromaDB, and retrieval is by vector similarity — not keyword matching. Results surface papers with <em>related concepts</em> that a keyword search would miss. And here's a bonus: each result has a 'Similar papers' button. That's pure nearest-neighbor search in embedding space — find the papers closest to this one semantically. Click it."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Click <strong>Discover</strong> in the sidebar. Type the query <code>attention mechanisms for long-context transformers</code>. Hit search. Let results render (they'll stream in from the backend). Once results appear, <strong>hover over a paper card</strong> to show the "Similar papers" action. Click it to show the similar papers panel. Hold for 5 seconds.
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>Demo tip:</strong> If search is slow, do a simpler query like <code>transformers</code> or <code>language models</code>. The goal is to show results appearing in real time from a live API call, not to wait 15 seconds. Pre-warming the model in setup ensures snappy responses.
+    </div>
+</div>
+
+<!-- SCENE 4 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">1:45–2:35</span>
+        <h2 class="section-title">Citation-Grounded Chat (Assistant)</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "The <strong>Assistant</strong> is where it gets powerful. This is retrieval-augmented generation. I ask a question, and the system retrieves from the <em>actual, full PDF text</em> in the corpus — not just abstracts. It chunks the relevant papers, embeds them on the AMD GPU, ranks them by relevance, and streams the answer back with <strong>inline citations</strong> you can click to jump to the source. Every embedding and retrieval happens on GPU, so latency is sub-second even with thousands of papers. The citations aren't hallucinations; they're grounded in real text."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Click <strong>Assistant</strong> in the sidebar. Type a question like: <code>What problem does the transformer architecture solve, and how?</code>. Hit send. Watch as:
+            <ul style="margin-top: 0.5rem; margin-left: 1rem;">
+                <li>Citations appear in a box on the right (these are retrieved documents).</li>
+                <li>The answer streams in on the left, grounded in those sources.</li>
+            </ul>
+            Once the answer finishes, <strong>click one citation</strong> to show it jumps back to the source paper in the Reader.
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>Demo tip:</strong> Keep the question specific but open-ended so the answer is substantive. "Tell me about X" usually gets 3–4 sentences grounded in 2–3 papers, which reads well on camera.
+    </div>
+</div>
+
+<!-- SCENE 5 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">2:35–3:10</span>
+        <h2 class="section-title">Compare & Reader</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "Next is <strong>Compare</strong>. Paste in two to five arXiv IDs, and the system contrasts their methods, contributions, and results side by side. It's built on LLM text generation, so the comparison reads naturally — not a table, but a narrative. Any paper also opens in the <strong>Reader</strong> for a grounded summary. And if you have your own PDF — research notes, a preprint, anything — you can <strong>upload it</strong>. It gets extracted, chunked, embedded on the GPU, and becomes instantly chat-queryable just like any arXiv paper. No proprietary format, no friction."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Click <strong>Compare</strong>. In the form, paste these two arXiv IDs:
+            <ul style="margin-top: 0.5rem;">
+                <li><code>1706.03762</code> (Attention is All You Need)</li>
+                <li><code>1810.04805</code> (BERT: Pre-training of Deep Bidirectional Transformers)</li>
+            </ul>
+            Hit "Compare". Let the comparison render. Scroll through it to show 2–3 bullet points. Then briefly switch to a paper in the <strong>Reader</strong> (click on a search result or a citation) to show the summary view and the Upload PDF panel at the bottom.
+        </div>
+    </div>
+</div>
+
+<!-- SCENE 6 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">3:10–3:40</span>
+        <h2 class="section-title">Architecture & Infra</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "Here's how it fits together. The <strong>Next.js frontend</strong> lives on Vercel. It talks over HTTPS to a <strong>FastAPI backend</strong> running on this AMD notebook, exposed via a Cloudflare Tunnel so it's reachable from anywhere. All the sentence-transformer embeddings run on the AMD GPU; ChromaDB stores the vectors on disk so they persist across restarts. The LLM text generation — chat and compare — is handled by Fireworks AI, a remote API. But here's the key: the latency-sensitive path, the interactive path, the path that matters for responsiveness — that's the embeddings. And that runs on AMD. That's where the GPU buys you speed."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Open README.md in the editor or on GitHub and scroll to the <strong>Architecture</strong> section (around line 39). Show the ASCII diagram of Next.js → FastAPI → GPU → ChromaDB pipeline.
+        </div>
+    </div>
+</div>
+
+<!-- SCENE 7 -->
+<div class="section">
+    <div class="section-header">
+        <span class="timing">3:40–4:00</span>
+        <h2 class="section-title">Close</h2>
+    </div>
+
+    <div class="block">
+        <div class="block-label">Narration</div>
+        <div class="narration">
+            "That's ResearchOS. Semantic search and paper recommendations powered by embeddings. Citation-grounded chat and comparison. All accelerated on an AMD Radeon GPU via ROCm. It's live now at <code>frontend-ucifer-pros.vercel.app</code>. Try it with your own research. Thanks for watching."
+        </div>
+    </div>
+
+    <div class="block">
+        <div class="block-label">On-screen action</div>
+        <div class="action">
+            Return to the <strong>Home page</strong>. Show the four main cards (Discover, Assistant, Reader, Compare) and the sidebar. Hold for 3 seconds. End.
+        </div>
+    </div>
+</div>
+
+<!-- TIMING CHEAT SHEET -->
+<div class="section" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+    <h2 style="font-family: var(--brand-serif); font-size: 1.3rem; margin-bottom: 1rem;">Timing Checklist</h2>
+    <table class="timing-table">
+        <thead>
+            <tr>
+                <th>Beat</th>
+                <th class="timing-col">Time</th>
+                <th>On-Screen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Hook + ResearchOS intro</td>
+                <td class="timing-col">0:00–0:25</td>
+                <td>Home page + sidebar</td>
+            </tr>
+            <tr>
+                <td><strong>AMD GPU proof (critical)</strong></td>
+                <td class="timing-col"><strong>0:25–1:05</strong></td>
+                <td>Terminal: rocm-smi, device=cuda, benchmark</td>
+            </tr>
+            <tr>
+                <td>Semantic search + similar papers</td>
+                <td class="timing-col">1:05–1:45</td>
+                <td>Live Discover demo</td>
+            </tr>
+            <tr>
+                <td>Citation-grounded chat</td>
+                <td class="timing-col">1:45–2:35</td>
+                <td>Live Assistant demo + click citation</td>
+            </tr>
+            <tr>
+                <td>Compare + Reader + Upload</td>
+                <td class="timing-col">2:35–3:10</td>
+                <td>Compare two papers, show Reader</td>
+            </tr>
+            <tr>
+                <td>Architecture</td>
+                <td class="timing-col">3:10–3:40</td>
+                <td>README diagram</td>
+            </tr>
+            <tr>
+                <td>Close</td>
+                <td class="timing-col">3:40–4:00</td>
+                <td>Home page, end</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SCORING NOTES -->
+<div class="section" style="margin-top: 2rem;">
+    <h2 style="font-family: var(--brand-serif); font-size: 1.3rem; margin-bottom: 1rem;">Scoring Notes</h2>
+    <div class="note" style="margin-bottom: 1rem;">
+        <strong>GPU proof is mandatory.</strong> Don't skip or abbreviate 0:25–1:05. This is where you prove the claim is real. The <code>rocm-smi</code> output and benchmark numbers are your evidence. Judges evaluating Track 3 entries will rewind and check this section.
+    </div>
+    <div class="note" style="margin-bottom: 1rem;">
+        <strong>Keep every demo live.</strong> Don't use slides or screenshots. Show the deployed URL working in real time. It reads as "this is a finished product," not a proof-of-concept.
+    </div>
+    <div class="note">
+        <strong>Pacing.</strong> Narration should feel natural and conversational, not read. Practice saying the lines aloud a few times so they land smoothly. Pause for 2–3 seconds after you point at something visual so viewers can read the screen.
+    </div>
+</div>
+
+</body>
+</html>
