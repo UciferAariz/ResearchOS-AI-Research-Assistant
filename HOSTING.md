@@ -1,8 +1,6 @@
 # Hosting ResearchOS for the demo
 
-Frontend is on Vercel. Backend runs on the AMD ROCm GPU notebook and is
-exposed to the internet via a Cloudflare Tunnel, since it needs the real
-GPU for the embedding benchmark and isn't a normal always-on server.
+
 
 ## 1. Start the backend on the notebook
 
